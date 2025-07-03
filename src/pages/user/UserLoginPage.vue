@@ -29,6 +29,7 @@
 import { reactive } from 'vue'
 import { userLoginUsingPost } from '@/api/userController.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
 import { message } from 'ant-design-vue'
 import router from '@/router' // 用于接受表单输入的值
 
@@ -39,6 +40,7 @@ const formState = reactive<API.UserLoginRequest>({
 })
 
 const loginUserStore = useLoginUserStore()
+const webSocketStore = useWebSocketStore()
 
 /**
  * 提交表单
@@ -46,11 +48,10 @@ const loginUserStore = useLoginUserStore()
  */
 const handleSubmit = async (values: any) => {
   const res = await userLoginUsingPost(values)
-  // 登录成功，把登录态保存到全局状态中
   if (res.data.code === 0 && res.data.data) {
     await loginUserStore.fetchLoginUser()
-    message.success('登录成功')
-    // WebSocket连接会在BasicLayout中自动建立
+    webSocketStore.resetUnreadModalFlag()
+    webSocketStore.initWebSocket()
     router.push({
       path: '/',
       replace: true,

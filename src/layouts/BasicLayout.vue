@@ -18,8 +18,19 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import GlobalSider from "@/components/GlobalSider.vue";
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
+
+const loginUserStore = useLoginUserStore()
+const webSocketStore = useWebSocketStore()
+
+// 页面加载时的初始化
+onMounted(() => {
+  console.log('BasicLayout 组件已挂载')
+})
 </script>
 
 <style scoped>

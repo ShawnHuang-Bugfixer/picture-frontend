@@ -18,7 +18,7 @@
         />
       </a-col>
 <!-- 用户信息展示栏 -->
-<a-col flex="120px">
+<a-col flex="200px">
   <div class="user-login-status">
     <div v-if="loginUserStore.loginUser.id">
       <a-dropdown>
@@ -41,6 +41,8 @@
           </a-menu>
         </template>
       </a-dropdown>
+      <!-- WebSocket 状态显示 -->
+      <WebSocketStatus />
     </div>
     <div v-else>
       <a-button type="primary" href="/user/login">登录</a-button>
@@ -52,15 +54,34 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, h, ref } from 'vue'
+import { computed, h, ref, watch } from 'vue'
 import { HomeOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
+import WebSocketStatus from './WebSocketStatus.vue'
 
 const loginUserStore = useLoginUserStore()
+const webSocketStore = useWebSocketStore()
+
+// 监听用户登录状态变化，自动建立 WebSocket 连接
+watch(() => loginUserStore.loginUser, (newUser, oldUser) => {
+  const newId = newUser?.id
+  const oldId = oldUser?.id
+  
+  if (newId && !oldId) {
+    // 用户登录成功，建立 WebSocket 连接
+    console.log('用户登录成功，建立 WebSocket 连接', newId)
+    webSocketStore.initWebSocket()
+  } else if (!newId && oldId) {
+    // 用户登出，断开 WebSocket 连接
+    console.log('用户登出，断开 WebSocket 连接')
+    webSocketStore.disconnect()
+  }
+}, { deep: true })
 
 // 未经过滤的菜单项
 const originItems = [
@@ -128,6 +149,9 @@ const doMenuClick = ({ key }: { key: any }) => {
 const doLogout = async () => {
   const res = await userLogoutUsingPost()
   if (res.data.code === 0) {
+    // 先断开 WebSocket 连接
+    webSocketStore.disconnect()
+    // 然后清空用户信息
     loginUserStore.setLoginUser({
       userName: '未登录',
     })

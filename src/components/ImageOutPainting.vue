@@ -39,6 +39,7 @@ import {
   uploadPictureByUrlUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import { getOnceTokenUsingGet } from '@/api/userController.ts'
 
 interface Props {
   picture?: API.PictureVO
@@ -69,18 +70,23 @@ const createTask = async () => {
     },
   })
   if (res.data.code === 0 && res.data.data) {
-    message.success('创建任务成功，请耐心等待，不要退出界面')
-    console.log(res.data.data.output.taskId)
-    taskId.value = res.data.data.output.taskId
-    // 开启轮询
-    startPolling()
+    const output = res.data.data.output
+    if (output && output.taskId) {
+      message.success('创建任务成功，请耐心等待，不要退出界面')
+      console.log(output.taskId)
+      taskId.value = output.taskId
+      // 开启轮询
+      startPolling()
+    } else {
+      message.error('图片任务失败，未获取到任务ID')
+    }
   } else {
     message.error('图片任务失败，' + res.data.message)
   }
 }
 
 // 轮询定时器
-let pollingTimer: NodeJS.Timeout = null
+let pollingTimer: ReturnType<typeof setInterval> | undefined = undefined
 
 // 开始轮询
 const startPolling = () => {
@@ -95,18 +101,18 @@ const startPolling = () => {
       })
       if (res.data.code === 0 && res.data.data) {
         const taskResult = res.data.data.output
-        if (taskResult.taskStatus === 'SUCCEEDED') {
+        if (taskResult && taskResult.taskStatus === 'SUCCEEDED') {
           message.success('扩图任务执行成功')
-          resultImageUrl.value = taskResult.outputImageUrl
+          resultImageUrl.value = (taskResult.outputImageUrl || '') as string
           // 清理轮询
           clearPolling()
-        } else if (taskResult.taskStatus === 'FAILED') {
+        } else if (taskResult && taskResult.taskStatus === 'FAILED') {
           message.error('扩图任务执行失败')
           // 清理轮询
           clearPolling()
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('扩图任务轮询失败', error)
       message.error('扩图任务轮询失败，' + error.message)
       // 清理轮询
@@ -119,8 +125,8 @@ const startPolling = () => {
 const clearPolling = () => {
   if (pollingTimer) {
     clearInterval(pollingTimer)
-    pollingTimer = null
-    taskId.value = null
+    pollingTimer = undefined
+    taskId.value = undefined
   }
 }
 
@@ -134,14 +140,21 @@ const uploadLoading = ref(false)
 const handleUpload = async () => {
   uploadLoading.value = true
   try {
+    // 先请求一次性 token
+    const tokenRes = await getOnceTokenUsingGet()
+    if (tokenRes.data.code !== 0 || !tokenRes.data.data) {
+      message.error('获取一次性 Token 失败：' + tokenRes.data.message)
+      uploadLoading.value = false
+      return
+    }
     const params: API.PictureUploadRequest = {
-      fileUrl: resultImageUrl.value,
+      fileUrl: resultImageUrl.value as string,
       spaceId: props.spaceId,
     }
     if (props.picture) {
       params.id = props.picture.id
     }
-    const res = await uploadPictureByUrlUsingPost(params)
+    const res: any = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
       // 将上传成功的图片信息传递给父组件
@@ -151,7 +164,7 @@ const handleUpload = async () => {
     } else {
       message.error('图片上传失败，' + res.data.message)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('图片上传失败', error)
     message.error('图片上传失败，' + error.message)
   }

@@ -46,6 +46,7 @@
 import { computed, onUnmounted, ref, watchEffect } from 'vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import { getOnceTokenUsingGet } from '@/api/userController.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import PictureEditWebSocket from '@/utils/pictureEditWebSocket.ts'
 import { PICTURE_EDIT_ACTION_ENUM, PICTURE_EDIT_MESSAGE_TYPE_ENUM } from '@/constants/picture.ts'
@@ -70,7 +71,7 @@ const isTeamSpace = computed(() => {
 const cropperRef = ref()
 
 // 缩放比例
-const changeScale = (num) => {
+const changeScale = (num: number) => {
   cropperRef.value?.changeScale(num)
   if (num > 0) {
     editAction(PICTURE_EDIT_ACTION_ENUM.ZOOM_IN)
@@ -92,13 +93,24 @@ const rotateRight = () => {
 }
 
 // 确认裁切
-const handleConfirm = () => {
-  cropperRef.value.getCropBlob((blob: Blob) => {
+const handleConfirm = async () => {
+  cropperRef.value.getCropBlob(async (blob: Blob) => {
     // blob 为已经裁切好的文件
     const fileName = (props.picture?.name || 'image') + '.png'
     const file = new File([blob], fileName, { type: blob.type })
-    // 上传图片
-    handleUpload({ file })
+    // 先请求一次性 token
+    try {
+      const res = await getOnceTokenUsingGet()
+      if (res.data.code === 0 && res.data.data) {
+        // token 获取成功，继续上传
+        await handleUpload({ file })
+      } else {
+        message.error('获取一次性 Token 失败：' + res.data.message)
+      }
+    } catch (err: any) {
+      console.error('获取一次性 Token 失败', err)
+      message.error('获取一次性 Token 失败：' + err.message)
+    }
   })
 }
 
@@ -113,7 +125,7 @@ const handleUpload = async ({ file }: any) => {
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
     params.spaceId = props.spaceId
-    const res = await uploadPictureUsingPost(params, {}, file)
+    const res: any = await uploadPictureUsingPost(params, {}, file)
     if (res.data.code === 0 && res.data.data) {
       message.success('图片上传成功')
       // 将上传成功的图片信息传递给父组件
@@ -122,7 +134,7 @@ const handleUpload = async ({ file }: any) => {
     } else {
       message.error('图片上传失败，' + res.data.message)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('图片上传失败', error)
     message.error('图片上传失败，' + error.message)
   }

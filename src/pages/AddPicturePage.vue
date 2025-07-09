@@ -20,10 +20,11 @@
     <!-- 图片编辑 -->
     <div v-if="picture" class="edit-bar">
       <a-space size="middle">
-        <a-button :icon="h(EditOutlined)" @click="doEditPicture">编辑图片</a-button>
+        <a-button :icon="h(EditOutlined)" @click="doEditPicture">裁剪图片</a-button>
         <a-button type="primary" :icon="h(FullscreenOutlined)" @click="doImagePainting">
           AI 扩图
         </a-button>
+        <a-button @click="showEditInfoModal = true">修改图片信息</a-button>
       </a-space>
       <ImageCropper
         ref="imageCropperRef"
@@ -40,46 +41,47 @@
         :onSuccess="onImageOutPaintingSuccess"
       />
     </div>
-    <!-- 图片信息表单 -->
-    <a-form
-      v-if="picture"
-      name="pictureForm"
-      layout="vertical"
-      :model="pictureForm"
-      @finish="handleSubmit"
-    >
-      <a-form-item name="name" label="名称">
-        <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
-      </a-form-item>
-      <a-form-item name="introduction" label="简介">
-        <a-textarea
-          v-model:value="pictureForm.introduction"
-          placeholder="请输入简介"
-          :auto-size="{ minRows: 2, maxRows: 5 }"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="category" label="分类">
-        <a-auto-complete
-          v-model:value="pictureForm.category"
-          placeholder="请输入分类"
-          :options="categoryOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="tags" label="标签">
-        <a-select
-          v-model:value="pictureForm.tags"
-          mode="tags"
-          placeholder="请输入标签"
-          :options="tagOptions"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%">创建</a-button>
-      </a-form-item>
-    </a-form>
+    <!-- 图片信息表单弹窗 -->
+    <a-modal v-model:open="showEditInfoModal" title="图片信息" :footer="null" @cancel="showEditInfoModal = false">
+      <a-form
+        name="pictureForm"
+        layout="vertical"
+        :model="pictureForm"
+        @finish="handleSubmitModal"
+      >
+        <a-form-item name="name" label="名称">
+          <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
+        </a-form-item>
+        <a-form-item name="introduction" label="简介">
+          <a-textarea
+            v-model:value="pictureForm.introduction"
+            placeholder="请输入简介"
+            :auto-size="{ minRows: 2, maxRows: 5 }"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item name="category" label="分类">
+          <a-auto-complete
+            v-model:value="pictureForm.category"
+            placeholder="请输入分类"
+            :options="categoryOptions"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item name="tags" label="标签">
+          <a-select
+            v-model:value="pictureForm.tags"
+            mode="tags"
+            placeholder="请输入标签"
+            :options="tagOptions"
+            allow-clear
+          />
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -245,6 +247,14 @@ const fetchSpace = async () => {
 watchEffect(() => {
   fetchSpace()
 })
+
+const showEditInfoModal = ref(false)
+
+// 用于弹窗表单的提交
+const handleSubmitModal = async (values: any) => {
+  await handleSubmit(values)
+  showEditInfoModal.value = false
+}
 </script>
 
 <style scoped>

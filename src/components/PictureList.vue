@@ -72,6 +72,7 @@ interface Props {
   autoFetch?: boolean
   infinite?: boolean
   useObserver?: boolean
+  fetchFunc?: (params: any) => Promise<any>
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -123,7 +124,8 @@ const fetchPictures = async (reset = false) => {
   }
 
   try {
-    const res = await listPictureVoByPageUsingPost(params)
+    const fetchApi = props.fetchFunc || listPictureVoByPageUsingPost
+    const res = await fetchApi(params)
     loading.value = false
     if (res.data.code === 0 && res.data.data) {
       const list = res.data.data.records || []

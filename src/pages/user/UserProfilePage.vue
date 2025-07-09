@@ -108,6 +108,7 @@
           :autoFetch="true"
           :infinite="true"
           :useObserver="true"
+          :fetchFunc="listMyPictureVoByPageUsingPost"
           @loading-change="handlePictureLoadingChange"
         />
       </a-spin>

@@ -69,7 +69,7 @@
           <div>大小：{{ (record.picSize / 1024).toFixed(2) }}KB</div>
         </template>
         <template v-if="column.dataIndex === 'reviewMessage'">
-          <div>审核状态：{{ PIC_REVIEW_STATUS_MAP[record.reviewStatus] }}</div>
+          <div>审核状态：{{ PIC_REVIEW_STATUS_MAP[Number(record.reviewStatus)] }}</div>
           <div>审核信息：{{ record.reviewMessage }}</div>
           <div>审核人：{{ record.reviewerId }}</div>
           <div v-if="record.reviewTime">
@@ -85,17 +85,17 @@
         <template v-else-if="column.key === 'action'">
           <a-space wrap>
             <a-button
-              v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.PASS"
+              v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.FINAL_APPROVED"
               type="link"
-              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS)"
+              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.FINAL_APPROVED)"
             >
               通过
             </a-button>
             <a-button
-              v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.REJECT"
+              v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.FINAL_REJECTED"
               type="link"
               danger
-              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)"
+              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.FINAL_REJECTED)"
             >
               拒绝
             </a-button>
@@ -193,6 +193,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
+  reviewStatus: undefined as number | undefined,
 })
 
 // 获取数据
@@ -221,7 +222,7 @@ const pagination = computed(() => {
     pageSize: searchParams.pageSize,
     total: total.value,
     showSizeChanger: true,
-    showTotal: (total) => `共 ${total} 条`,
+    showTotal: (total: number) => `共 ${total} 条`,
   }
 })
 
@@ -240,7 +241,7 @@ const doSearch = () => {
 }
 
 // 删除数据
-const doDelete = async (id: string) => {
+const doDelete = async (id: number) => {
   if (!id) {
     return
   }
@@ -257,7 +258,7 @@ const doDelete = async (id: string) => {
 // 审核图片
 const handleReview = async (record: API.Picture, reviewStatus: number) => {
   const reviewMessage =
-    reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员操作通过' : '管理员操作拒绝'
+    reviewStatus === PIC_REVIEW_STATUS_ENUM.FINAL_APPROVED ? '管理员操作通过' : '管理员操作拒绝'
   const res = await doPictureReviewUsingPost({
     id: record.id,
     reviewStatus,

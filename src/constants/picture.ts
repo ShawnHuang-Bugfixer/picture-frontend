@@ -2,27 +2,32 @@
  * 图片审核状态
  */
 export const PIC_REVIEW_STATUS_ENUM = {
-  REVIEWING: 0,
-  PASS: 1,
-  REJECT: 2,
+  PENDING_REVIEW: 0, // 待审核
+  AI_SUSPICIOUS: 3,  // 机审存疑
+  FINAL_APPROVED: 6, // 最终通过
+  FINAL_REJECTED: 7, // 最终拒绝
+  APPEAL_PENDING: 8, // 申诉中
 }
 
 /**
  * 图片审核状态文案
  */
-export const PIC_REVIEW_STATUS_MAP = {
+export const PIC_REVIEW_STATUS_MAP: Record<number, string> = {
   0: '待审核',
-  1: '通过',
-  2: '拒绝',
+  3: '机审存疑',
+  6: '最终通过',
+  7: '最终拒绝',
+  8: '申诉中',
 }
 
 /**
  * 图片审核下拉表单选项
  */
 export const PIC_REVIEW_STATUS_OPTIONS = Object.keys(PIC_REVIEW_STATUS_MAP).map((key) => {
+  const numKey = Number(key) as keyof typeof PIC_REVIEW_STATUS_MAP;
   return {
-    label: PIC_REVIEW_STATUS_MAP[key],
-    value: key,
+    label: PIC_REVIEW_STATUS_MAP[numKey],
+    value: numKey,
   }
 })
 

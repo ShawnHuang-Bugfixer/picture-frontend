@@ -29,11 +29,14 @@
                     {{ tag }}
                   </a-tag>
                 </a-flex>
+                <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px;">
+                  ID: <a style="cursor:pointer;user-select:all;" @click.stop="copyId(picture.id)">{{ picture.id }}</a>
+                </div>
               </template>
             </a-card-meta>
             <template v-if="showOp" #actions>
-              <ShareAltOutlined @click.stop="doShare(picture, $event)" />
-              <SearchOutlined @click.stop="doSearch(picture, $event)" />
+              <ShareAltOutlined v-if="showShare" @click.stop="doShare(picture, $event)" />
+              <SearchOutlined v-if="showSearch" @click.stop="doSearch(picture, $event)" />
               <EditOutlined v-if="canEdit" @click.stop="doEdit(picture, $event)" />
               <DeleteOutlined v-if="canDelete" @click.stop="doDelete(picture, $event)" />
             </template>
@@ -73,6 +76,9 @@ interface Props {
   infinite?: boolean
   useObserver?: boolean
   fetchFunc?: (params: any) => Promise<any>
+  showShare?: boolean // 新增
+  showSearch?: boolean // 新增
+  showId?: boolean // 新增
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -84,6 +90,9 @@ const props = withDefaults(defineProps<Props>(), {
   autoFetch: false,
   infinite: false,
   useObserver: false,
+  showShare: true, // 默认显示
+  showSearch: true, // 默认显示
+  showId: false, // 默认不展示
 })
 
 const emit = defineEmits(['loading-change'])
@@ -275,6 +284,32 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
   if (shareModalRef.value) {
     shareModalRef.value.openModal()
+  }
+}
+
+// 复制id到剪切板
+const copyId = (id: string | number) => {
+  if (!id) return
+  const text = String(id)
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      message.success('已复制')
+    }, () => {
+      message.error('复制失败')
+    })
+  } else {
+    // 兼容不支持 clipboard 的环境
+    const input = document.createElement('input')
+    input.value = text
+    document.body.appendChild(input)
+    input.select()
+    try {
+      document.execCommand('copy')
+      message.success('已复制')
+    } catch (e) {
+      message.error('复制失败')
+    }
+    document.body.removeChild(input)
   }
 }
 

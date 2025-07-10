@@ -331,3 +331,18 @@ export async function uploadUserAvatarPictureUsingPost(
   );
 }
 
+/** appealRejectedPicture POST /api/picture/appeal */
+export async function appealRejectedPictureUsingPost(
+  body: API.AppealRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseBoolean_>('/api/picture/appeal', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+

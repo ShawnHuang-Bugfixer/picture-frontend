@@ -1,18 +1,17 @@
 declare namespace API {
   // 权限请求参数
   interface PermissionListRequest {
-    spaceId?: number;
-    userId?: number;
-    pictureId?: number;
+    spaceId?: number
+    userId?: number
+    pictureId?: number
   }
 
   // 权限响应类型
   type BaseResponseListString_ = {
-    code?: number;
-    data?: string[];
-    message?: string;
-  };
-
+    code?: number
+    data?: string[]
+    message?: string
+  }
 
   type BaseResponseBoolean_ = {
     code?: number
@@ -740,10 +739,10 @@ declare namespace API {
 
   // 新增的响应类型：BaseResponseString
   type BaseResponseString = {
-    code?: number;
-    data?: string;  // 头像 URL
-    message?: string;
-  };
+    code?: number
+    data?: string // 头像 URL
+    message?: string
+  }
 
   type ACKReviewMessage = {
     userId: number
@@ -754,14 +753,18 @@ declare namespace API {
     id: number
     userId: number
     content: string
-    status: number   // 0 = 未读，1 = 已读
+    status: number // 0 = 未读，1 = 已读
     createAt: string // Date 类型建议转为字符串接收，方便与后端对接
-    readAt?: string  // 可选，未读时为 null
+    readAt?: string // 可选，未读时为 null
   }
 
   type BaseResponseListReviewMessage_ = {
     code: number
     data: ReviewMessage[]
     message: string
+  }
+
+  type AppealRequest = {
+    picId?: number
   }
 }

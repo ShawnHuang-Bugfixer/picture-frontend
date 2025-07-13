@@ -710,6 +710,8 @@ declare namespace API {
     checkPassword?: string
     userAccount?: string
     userPassword?: string
+    email?: string
+    code?: string
   }
 
   type UserUpdateRequest = {

@@ -30,8 +30,8 @@
               <a-button type="primary" @click="showEditModal = true">
                 <EditOutlined /> 修改信息
               </a-button>
-              <a-button @click="showAppealModal = true">
-                申诉
+              <a-button @click="showAppealingPictureModal = true">
+                申诉中图片
               </a-button>
               <a-badge :count="unreadCount" :offset="[10, 0]">
                 <a-button @click="showMessageModal = true">
@@ -178,6 +178,7 @@
           :showShare="false"
           :showSearch="false"
           :showId="true"
+          :onAppeal="handleAppealFromCard"
           @loading-change="handleRejectedPictureLoadingChange"
         />
       </a-spin>
@@ -247,12 +248,38 @@
     >
       <a-form layout="vertical">
         <a-form-item label="图片ID" name="pictureId">
-          <a-input v-model:value="appealForm.pictureId" placeholder="点击未过审列表查看更多按钮，复制未过审图片id" />
+          <a-input v-model:value="appealForm.pictureId" placeholder="点击未过审列表查看更多按钮，复制未过审图片id" readonly />
         </a-form-item>
         <a-form-item label="申诉理由" name="reason">
           <a-textarea v-model:value="appealForm.reason" placeholder="请输入申诉理由（前端模拟，后端暂未支持）" :rows="3" />
         </a-form-item>
       </a-form>
+    </a-modal>
+
+    <!-- 申诉中图片弹窗 -->
+    <a-modal
+      v-model:open="showAppealingPictureModal"
+      title="申诉中图片"
+      width="80%"
+      :footer="null"
+      @cancel="showAppealingPictureModal = false"
+    >
+      <a-spin :spinning="isPictureListLoading">
+        <PictureList
+          v-if="showAppealingPictureModal && user?.id"
+          :query="{ userId: user.id, reviewStatus: Number(PIC_REVIEW_STATUS_ENUM.APPEAL_PENDING), sortField: 'createTime', sortOrder: 'desc' }"
+          :autoFetch="true"
+          :infinite="true"
+          :useObserver="true"
+          :fetchFunc="listMyPictureVoByPageUsingPost"
+          :showOp="false"
+          :showShare="false"
+          :showSearch="false"
+          :canEdit="false"
+          :canDelete="false"
+          @loading-change="handlePictureLoadingChange"
+        />
+      </a-spin>
     </a-modal>
   </div>
 </template>
@@ -309,6 +336,7 @@ const appealForm = ref({
   reason: '',
 })
 const appealLoading = ref(false)
+const showAppealingPictureModal = ref(false)
 
 // 处理图片列表加载状态变化
 const handlePictureLoadingChange = (isLoading: boolean) => {
@@ -517,15 +545,11 @@ const handleAppeal = async () => {
     message.error('图片ID不能为空')
     return
   }
-  const picIdNum = Number(appealForm.value.pictureId)
-  if (isNaN(picIdNum)) {
-    message.error('图片ID必须为数字')
-    return
-  }
+  // 不再用 Number()，直接用字符串
   appealLoading.value = true
   try {
     const res = await appealRejectedPictureUsingPost({
-      picId: picIdNum,
+      picId: appealForm.value.pictureId, // 直接传字符串
       // reason 字段前端模拟，后端暂未支持
     })
     if (res.data.code === 0) {
@@ -540,6 +564,12 @@ const handleAppeal = async () => {
   } finally {
     appealLoading.value = false
   }
+}
+
+const handleAppealFromCard = (picture: API.PictureVO) => {
+  // 保证 id 为字符串
+  appealForm.value.pictureId = picture.id ? String(picture.id) : ''
+  showAppealModal.value = true
 }
 
 onMounted(async () => {

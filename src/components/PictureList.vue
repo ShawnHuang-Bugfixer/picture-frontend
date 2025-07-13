@@ -39,6 +39,7 @@
               <SearchOutlined v-if="showSearch" @click.stop="doSearch(picture, $event)" />
               <EditOutlined v-if="canEdit" @click.stop="doEdit(picture, $event)" />
               <DeleteOutlined v-if="canDelete" @click.stop="doDelete(picture, $event)" />
+              <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(picture)">申诉</a>
             </template>
           </a-card>
         </a-list-item>
@@ -79,6 +80,7 @@ interface Props {
   showShare?: boolean // 新增
   showSearch?: boolean // 新增
   showId?: boolean // 新增
+  onAppeal?: (picture: API.PictureVO) => void // 新增
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -93,6 +95,7 @@ const props = withDefaults(defineProps<Props>(), {
   showShare: true, // 默认显示
   showSearch: true, // 默认显示
   showId: false, // 默认不展示
+  onAppeal: undefined,
 })
 
 const emit = defineEmits(['loading-change'])

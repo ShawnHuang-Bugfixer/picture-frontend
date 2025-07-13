@@ -20,9 +20,17 @@
         :rules="[
           { required: true, message: '请输入确认密码' },
           { min: 8, message: '确认密码长度不能小于 8 位' },
+          { validator: validateCheckPassword, trigger: 'blur' }
         ]"
       >
         <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" />
+      </a-form-item>
+      <a-form-item name="email" :rules="[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '邮箱格式不正确' }]">
+        <a-input v-model:value="formState.email" placeholder="请输入邮箱" style="width: 60%" />
+        <a-button style="margin-left: 8px" @click="handleSendCode" :disabled="codeBtnDisabled">{{ codeBtnText }}</a-button>
+      </a-form-item>
+      <a-form-item name="code" :rules="[{ required: true, message: '请输入验证码' }]">
+        <a-input v-model:value="formState.code" placeholder="请输入验证码" style="width: 60%" />
       </a-form-item>
       <div class="tips">
         已有账号？
@@ -35,29 +43,52 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { userRegisterUsingPost } from '@/api/userController.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { message } from 'ant-design-vue'
 import router from '@/router' // 用于接受表单输入的值
+import { sendEmailCode } from '@/api/emailCodeController'
 
 // 用于接受表单输入的值
 const formState = reactive<API.UserRegisterRequest>({
   userAccount: '',
   userPassword: '',
   checkPassword: '',
+  email: '',
+  code: '',
 })
 
 const loginUserStore = useLoginUserStore()
+
+const codeBtnText = ref('获取验证码')
+const codeBtnDisabled = ref(false)
+let codeTimer: any = null
+
+const validateCheckPassword = (_rule: any, value: string) => {
+  if (!value) {
+    return Promise.reject('请输入确认密码')
+  }
+  if (value.length < 8) {
+    return Promise.reject('确认密码长度不能小于 8 位')
+  }
+  if (value !== formState.userPassword) {
+    return Promise.reject('两次输入的密码不一致')
+  }
+  return Promise.resolve()
+}
 
 /**
  * 提交表单
  * @param values
  */
-const handleSubmit = async (values: any) => {
-  // 校验两次输入的密码是否一致
-  if (values.userPassword !== values.checkPassword) {
-    message.error('两次输入的密码不一致')
+const handleSubmit = async (values: API.UserRegisterRequest) => {
+  if (!values.email) {
+    message.error('请输入邮箱')
+    return
+  }
+  if (!values.code) {
+    message.error('请输入验证码')
     return
   }
   const res = await userRegisterUsingPost(values)
@@ -70,6 +101,40 @@ const handleSubmit = async (values: any) => {
     })
   } else {
     message.error('注册失败，' + res.data.message)
+  }
+}
+
+const handleSendCode = async () => {
+  if (!formState.email) {
+    message.error('请输入邮箱')
+    return
+  }
+  codeBtnDisabled.value = true
+  codeBtnText.value = '发送中...'
+  try {
+    const res = await sendEmailCode(formState.email)
+    if (res.data.code === 0 && res.data.data) {
+      message.success('验证码已发送，请查收邮箱')
+      let count = 60
+      codeBtnText.value = `${count}s后重试`
+      codeTimer = setInterval(() => {
+        count--
+        codeBtnText.value = `${count}s后重试`
+        if (count <= 0) {
+          clearInterval(codeTimer)
+          codeBtnText.value = '获取验证码'
+          codeBtnDisabled.value = false
+        }
+      }, 1000)
+    } else {
+      message.error(res.data.message || '验证码发送失败')
+      codeBtnDisabled.value = false
+      codeBtnText.value = '获取验证码'
+    }
+  } catch (e) {
+    message.error('验证码发送失败')
+    codeBtnDisabled.value = false
+    codeBtnText.value = '获取验证码'
   }
 }
 </script>

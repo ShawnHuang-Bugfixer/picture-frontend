@@ -770,3 +770,5 @@ declare namespace API {
     picId?: number
   }
 }
+
+declare module 'vue-slider-captcha';

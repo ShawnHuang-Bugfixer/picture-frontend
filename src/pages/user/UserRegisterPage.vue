@@ -13,7 +13,7 @@
           { min: 8, message: '密码长度不能小于 8 位' },
         ]"
       >
-        <a-input-password v-model:value="formState.userPassword" placeholder="请输入密码" />
+        <a-input-password v-model:value="formState.userPassword" placeholder="请输入密码" autocomplete="new-password" />
       </a-form-item>
       <a-form-item
         name="checkPassword"
@@ -23,7 +23,7 @@
           { validator: validateCheckPassword, trigger: 'blur' }
         ]"
       >
-        <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" />
+        <a-input-password v-model:value="formState.checkPassword" placeholder="请输入确认密码" autocomplete="new-password" />
       </a-form-item>
       <a-form-item name="email" :rules="[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '邮箱格式不正确' }]">
         <a-input v-model:value="formState.email" placeholder="请输入邮箱" style="width: 60%" />
@@ -40,6 +40,11 @@
         <a-button type="primary" html-type="submit" style="width: 100%">注册</a-button>
       </a-form-item>
     </a-form>
+    <SliderCaptcha
+      :visible="showSlider"
+      @success="onSliderSuccess"
+      @close="onSliderClose"
+    />
   </div>
 </template>
 <script lang="ts" setup>
@@ -48,7 +53,8 @@ import { userRegisterUsingPost } from '@/api/userController.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { message } from 'ant-design-vue'
 import router from '@/router' // 用于接受表单输入的值
-import { sendEmailCode } from '@/api/emailCodeController'
+import { sendEmailCode, getSliderToken } from '@/api/emailCodeController'
+import SliderCaptcha from '@/components/SliderCaptcha.vue'
 
 // 用于接受表单输入的值
 const formState = reactive<API.UserRegisterRequest>({
@@ -64,6 +70,9 @@ const loginUserStore = useLoginUserStore()
 const codeBtnText = ref('获取验证码')
 const codeBtnDisabled = ref(false)
 let codeTimer: any = null
+
+const showSlider = ref(false)
+let sliderResolve: ((v: boolean) => void) | null = null
 
 const validateCheckPassword = (_rule: any, value: string) => {
   if (!value) {
@@ -104,11 +113,39 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
   }
 }
 
+const showSliderCaptcha = () => {
+  showSlider.value = true
+  return new Promise<boolean>((resolve) => {
+    sliderResolve = resolve
+  })
+}
+const onSliderSuccess = () => {
+  showSlider.value = false
+  sliderResolve && sliderResolve(true)
+}
+const onSliderClose = () => {
+  showSlider.value = false
+  sliderResolve && sliderResolve(false)
+}
+
 const handleSendCode = async () => {
   if (!formState.email) {
     message.error('请输入邮箱')
     return
   }
+  // 1. 弹出滑块拼图
+  const sliderResult = await showSliderCaptcha()
+  if (!sliderResult) {
+    message.error('请先通过滑块验证')
+    return
+  }
+  // 2. 获取一次性 token
+  const tokenRes = await getSliderToken()
+  if (tokenRes.data.code !== 0 || !tokenRes.data.data) {
+    message.error('获取滑块token失败')
+    return
+  }
+  // 3. 正常请求验证码
   codeBtnDisabled.value = true
   codeBtnText.value = '发送中...'
   try {

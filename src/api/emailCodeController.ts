@@ -9,4 +9,12 @@ export function sendEmailCode(email: string) {
   return myAxios.get<API.BaseResponseBoolean_>('/api/email/sendCode', {
     params: { email },
   });
+}
+
+/**
+ * 获取滑块验证码一次性 token
+ * @returns Promise<API.BaseResponseBoolean_>
+ */
+export function getSliderToken() {
+  return myAxios.get<API.BaseResponseBoolean_>('/api/email/sliderToken');
 } 

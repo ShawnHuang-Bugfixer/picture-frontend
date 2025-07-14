@@ -41,8 +41,6 @@
           </a-menu>
         </template>
       </a-dropdown>
-      <!-- WebSocket 状态显示 -->
-      <WebSocketStatus />
     </div>
     <div v-else>
       <a-button type="primary" href="/user/login">登录</a-button>
@@ -62,7 +60,6 @@ import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
 import { userLogoutUsingPost } from '@/api/userController.ts'
-import WebSocketStatus from './WebSocketStatus.vue'
 
 const loginUserStore = useLoginUserStore()
 const webSocketStore = useWebSocketStore()

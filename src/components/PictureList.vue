@@ -9,40 +9,42 @@
       :data-source="autoFetch ? pictures : dataList"
       :loading="loading"
     >
-      <template #renderItem="{ item: picture }">
-        <a-list-item style="padding: 0">
-          <a-card class="picture-card" hoverable @click="doClickPicture(picture)">
-            <template #cover>
-              <img
-                :alt="picture.name"
-                :src="picture.thumbnailUrl ?? picture.url"
-                class="picture-img"
-              />
-            </template>
-            <a-card-meta :title="picture.name">
-              <template #description>
-                <a-flex>
-                  <a-tag color="green">
-                    {{ picture.category ?? '默认' }}
-                  </a-tag>
-                  <a-tag v-for="tag in picture.tags" :key="tag">
-                    {{ tag }}
-                  </a-tag>
-                </a-flex>
-                <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px;">
-                  ID: <a style="cursor:pointer;user-select:all;" @click.stop="copyId(picture.id)">{{ picture.id }}</a>
-                </div>
+      <template #renderItem="slotProps">
+        <slot name="renderItem" v-bind="slotProps">
+          <a-list-item style="padding: 0">
+            <a-card class="picture-card" hoverable @click="doClickPicture(slotProps.item)">
+              <template #cover>
+                <img
+                  :alt="slotProps.item.name"
+                  :src="slotProps.item.thumbnailUrl ?? slotProps.item.url"
+                  class="picture-img"
+                />
               </template>
-            </a-card-meta>
-            <template v-if="showOp" #actions>
-              <ShareAltOutlined v-if="showShare" @click.stop="doShare(picture, $event)" />
-              <SearchOutlined v-if="showSearch" @click.stop="doSearch(picture, $event)" />
-              <EditOutlined v-if="canEdit" @click.stop="doEdit(picture, $event)" />
-              <DeleteOutlined v-if="canDelete" @click.stop="doDelete(picture, $event)" />
-              <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(picture)">申诉</a>
-            </template>
-          </a-card>
-        </a-list-item>
+              <a-card-meta :title="slotProps.item.name">
+                <template #description>
+                  <a-flex>
+                    <a-tag color="green">
+                      {{ slotProps.item.category ?? '默认' }}
+                    </a-tag>
+                    <a-tag v-for="tag in slotProps.item.tags" :key="tag">
+                      {{ tag }}
+                    </a-tag>
+                  </a-flex>
+                  <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px;">
+                    ID: <a style="cursor:pointer;user-select:all;" @click.stop="copyId(slotProps.item.id)">{{ slotProps.item.id }}</a>
+                  </div>
+                </template>
+              </a-card-meta>
+              <template v-if="showOp" #actions>
+                <ShareAltOutlined v-if="showShare" @click.stop="doShare(slotProps.item, $event)" />
+                <SearchOutlined v-if="showSearch" @click.stop="doSearch(slotProps.item, $event)" />
+                <EditOutlined v-if="canEdit" @click.stop="doEdit(slotProps.item, $event)" />
+                <DeleteOutlined v-if="canDelete" @click.stop="doDelete(slotProps.item, $event)" />
+                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">申诉</a>
+              </template>
+            </a-card>
+          </a-list-item>
+        </slot>
       </template>
     </a-list>
     <div v-if="infinite && loading" class="infinite-loading">加载中...</div>

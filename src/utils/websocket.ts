@@ -16,7 +16,8 @@ export function connectWebSocket(
 ) {
   if (socket && socket.readyState === WebSocket.OPEN) return;
 
-  const wsUrl = 'ws://localhost:8123/api/ws/messagepush/connect';
+  // const wsUrl = 'ws://localhost:8123/api/ws/messagepush/connect';
+  const wsUrl = 'wss://collabimage.afishingcat.xin/api/ws/messagepush/connect';
   socket = new WebSocket(wsUrl);
 
   socket.onopen = () => {
@@ -160,4 +161,4 @@ function handleMessage(msg: any) {
     default:
       // 未处理的消息类型
   }
-} 
+}

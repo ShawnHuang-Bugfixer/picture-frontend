@@ -11,7 +11,7 @@
         </a-layout-content>
       </a-layout>
       <a-layout-footer class="footer">
-        <div>图库</div>
+        <div>墨灵共绘</div>
       </a-layout-footer>
     </a-layout>
   </div>

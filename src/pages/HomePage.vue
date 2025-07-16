@@ -32,7 +32,21 @@
     </div>
 
     <!-- 图片列表（无限加载） -->
-    <PictureList :dataList="dataList" :showOp="false" />
+    <PictureList :dataList="dataList" :showOp="false">
+      <template #renderItem="{ item }">
+        <a-list-item style="padding: 0">
+          <a-card class="picture-card" hoverable @click="$router.push({ path: `/picture/${item.id}` })">
+            <template #cover>
+              <img
+                :alt="item.name"
+                :src="item.thumbnailUrl ?? item.url"
+                class="picture-img"
+              />
+            </template>
+          </a-card>
+        </a-list-item>
+      </template>
+    </PictureList>
 
     <!-- 加载提示或结束 -->
     <div class="load-status" v-if="loading">世界那么大，上传你的所见吧！</div>

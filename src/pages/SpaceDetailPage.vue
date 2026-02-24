@@ -32,6 +32,9 @@
         >
           空间分析
         </a-button>
+        <a-button v-if="canViewSrResult" type="primary" ghost @click="goToSrResultPage">
+          超分结果
+        </a-button>
         <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
         <a-tooltip
           :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
@@ -105,12 +108,14 @@ import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
 import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
+import { useRouter } from 'vue-router'
 
 interface Props {
   id: string | number
 }
 
 const props = defineProps<Props>()
+const router = useRouter()
 const space = ref<API.SpaceVO>({})
 
 // 登录用户信息
@@ -194,6 +199,11 @@ const canDeletePicture = computed(() => {
 })
 
 const canManageSpaceUser = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_MANAGE_MEMBERS))
+const canViewSrResult = computed(() => {
+  return space.value.spaceType === 0
+    ? permissionList.value.includes(SPACE_PERMISSION_ENUM.PRIVATE_VIEW_IMAGE)
+    : permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_VIEW_IMAGE)
+})
 // const canUploadPicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_UPLOAD_IMAGE))
 // const canEditPicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_MODIFY_IMAGE))
 // const canDeletePicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_DELETE_IMAGE))
@@ -431,6 +441,10 @@ const openSuperResolutionModal = (picture: API.PictureVO) => {
 
 const onSuperResolutionTaskCreated = (taskId: string) => {
   startSrTaskPolling(taskId)
+}
+
+const goToSrResultPage = () => {
+  router.push(`/space/${props.id}/sr_result`)
 }
 
 onBeforeUnmount(() => {

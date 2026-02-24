@@ -2,11 +2,11 @@ import axios from "axios";
 import {message} from "ant-design-vue";
 
 // 区分开发和生产环境
-// const DEV_BASE_URL = "http://localhost:8123";
-const PROD_BASE_URL = "https://collabimage.afishingcat.xin";
+const DEV_BASE_URL = 'http://localhost:8123'
+const PROD_BASE_URL = 'https://collabimage.afishingcat.xin'
 // 创建 Axios 实例
 const myAxios = axios.create({
-  baseURL: PROD_BASE_URL,
+  baseURL: import.meta.env.DEV ? DEV_BASE_URL : PROD_BASE_URL,
   timeout: 10000,
   withCredentials: true,
 });

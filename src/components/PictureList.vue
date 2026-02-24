@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div
     class="picture-list"
     ref="listRef"
@@ -24,7 +24,7 @@
                 <template #description>
                   <a-flex>
                     <a-tag color="green">
-                      {{ slotProps.item.category ?? '默认' }}
+                      {{ slotProps.item.category ?? '榛樿' }}
                     </a-tag>
                     <a-tag v-for="tag in slotProps.item.tags" :key="tag">
                       {{ tag }}
@@ -40,16 +40,17 @@
                 <SearchOutlined v-if="showSearch" @click.stop="doSearch(slotProps.item, $event)" />
                 <EditOutlined v-if="canEdit" @click.stop="doEdit(slotProps.item, $event)" />
                 <DeleteOutlined v-if="canDelete" @click.stop="doDelete(slotProps.item, $event)" />
-                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">申诉</a>
+                <a v-if="showSuperResolution && onSuperResolution" style="color:#1677ff;" @click.stop="doSuperResolution(slotProps.item, $event)">AI超分</a>
+                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">鐢宠瘔</a>
               </template>
             </a-card>
           </a-list-item>
         </slot>
       </template>
     </a-list>
-    <div v-if="infinite && loading" class="infinite-loading">加载中...</div>
-    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">暂无图片</div>
-    <!-- Intersection Observer 锚点 -->
+    <div v-if="infinite && loading" class="infinite-loading">鍔犺浇涓?..</div>
+    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">鏆傛棤鍥剧墖</div>
+    <!-- Intersection Observer 閿氱偣 -->
     <div v-if="infinite" ref="observerAnchor" class="observer-anchor"></div>
   </div>
 </template>
@@ -79,10 +80,12 @@ interface Props {
   infinite?: boolean
   useObserver?: boolean
   fetchFunc?: (params: any) => Promise<any>
-  showShare?: boolean // 新增
-  showSearch?: boolean // 新增
-  showId?: boolean // 新增
-  onAppeal?: (picture: API.PictureVO) => void // 新增
+  showShare?: boolean // 鏂板
+  showSearch?: boolean // 鏂板
+  showId?: boolean // 鏂板
+  showSuperResolution?: boolean
+  onSuperResolution?: (picture: API.PictureVO) => void
+  onAppeal?: (picture: API.PictureVO) => void // 鏂板
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -94,9 +97,11 @@ const props = withDefaults(defineProps<Props>(), {
   autoFetch: false,
   infinite: false,
   useObserver: false,
-  showShare: true, // 默认显示
-  showSearch: true, // 默认显示
-  showId: false, // 默认不展示
+  showShare: true, // 榛樿鏄剧ず
+  showSearch: true, // 榛樿鏄剧ず
+  showId: false,
+  showSuperResolution: false,
+  onSuperResolution: undefined,
   onAppeal: undefined,
 })
 
@@ -112,16 +117,15 @@ const pageSize = ref(20)
 const listRef = ref<HTMLElement | null>(null)
 const observerAnchor = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
-let lastLoadTime = 0 // 记录上次加载时间
-const LOAD_INTERVAL = 500 // 设置最小加载间隔
-
-// 通知父组件加载状态变化
+let lastLoadTime = 0 // 璁板綍涓婃鍔犺浇鏃堕棿
+const LOAD_INTERVAL = 500 // 璁剧疆鏈€灏忓姞杞介棿闅?
+// 閫氱煡鐖剁粍浠跺姞杞界姸鎬佸彉鍖?
 watch(loading, (newVal) => {
   emit('loading-change', newVal)
 })
 
 const fetchPictures = async (reset = false) => {
-  // 防止连续快速加载
+  // 闃叉杩炵画蹇€熷姞杞?
   const now = Date.now()
   if (now - lastLoadTime < LOAD_INTERVAL) {
     return
@@ -158,11 +162,11 @@ const fetchPictures = async (reset = false) => {
     }
   } catch (error) {
     loading.value = false
-    message.error('加载图片失败')
+    message.error('鍔犺浇鍥剧墖澶辫触')
   }
 }
 
-// 监听 query 变化时重置分页
+// 鐩戝惉 query 鍙樺寲鏃堕噸缃垎椤?
 watch(() => props.query, () => {
   if (props.autoFetch) {
     current.value = 1
@@ -171,7 +175,7 @@ watch(() => props.query, () => {
   }
 }, { deep: true, immediate: true })
 
-// Observer滚动检测
+// Observer婊氬姩妫€娴?
 const setupObserver = () => {
   if (!props.useObserver || !props.infinite) return
 
@@ -185,10 +189,10 @@ const setupObserver = () => {
       (entries) => {
         if (!props.infinite || finished.value || loading.value) return
 
-        // 只处理第一个元素
+        // 鍙鐞嗙涓€涓厓绱?
         const entry = entries[0]
         if (entry.isIntersecting) {
-          // 增加防抖检测
+          // 澧炲姞闃叉姈妫€娴?
           const now = Date.now()
           if (now - lastLoadTime > LOAD_INTERVAL) {
             current.value += 1
@@ -199,7 +203,7 @@ const setupObserver = () => {
       {
         root: listRef.value,
         threshold: 0.1,
-        rootMargin: '0px 0px 200px 0px' // 提前200px加载
+        rootMargin: '0px 0px 200px 0px' // 鎻愬墠200px鍔犺浇
       }
     )
 
@@ -211,7 +215,7 @@ const setupObserver = () => {
   }
 }
 
-// 重新设置Observer
+// 閲嶆柊璁剧疆Observer
 const resetObserver = () => {
   if (props.useObserver) {
     setupObserver()
@@ -232,7 +236,7 @@ onUnmounted(() => {
   }
 })
 
-// 当关键属性变化时重置Observer
+// 褰撳叧閿睘鎬у彉鍖栨椂閲嶇疆Observer
 watch(() => [props.infinite, props.useObserver, props.query], () => {
   if (props.useObserver && props.infinite) {
     nextTick(() => {
@@ -241,20 +245,20 @@ watch(() => [props.infinite, props.useObserver, props.query], () => {
   }
 })
 
-// 跳转至图片详情页
+// 璺宠浆鑷冲浘鐗囪鎯呴〉
 const doClickPicture = (picture: API.PictureVO) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
 }
 
-// 搜索
+// 鎼滅储
 const doSearch = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   window.open(`/search_picture?pictureId=${picture.id}`)
 }
 
-// 编辑
+// 缂栬緫
 const doEdit = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   router.push({
@@ -266,22 +270,27 @@ const doEdit = (picture: API.PictureVO, e: Event) => {
   })
 }
 
-// 删除数据
+// 鍒犻櫎鏁版嵁
 const doDelete = async (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   const id = picture.id
   if (!id) return
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
-    message.success('删除成功')
+    message.success('鍒犻櫎鎴愬姛')
     props.onReload?.()
     if (props.autoFetch) fetchPictures(true)
   } else {
-    message.error('删除失败')
+    message.error('鍒犻櫎澶辫触')
   }
 }
 
-// ----- 分享操作 ----
+const doSuperResolution = (picture: API.PictureVO, e: Event) => {
+  e.stopPropagation()
+  props.onSuperResolution?.(picture)
+}
+
+// ----- 鍒嗕韩鎿嶄綔 ----
 const shareModalRef = ref()
 const shareLink = ref<string>()
 const doShare = (picture: API.PictureVO, e: Event) => {
@@ -292,7 +301,7 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   }
 }
 
-// 复制id到剪切板
+// 澶嶅埗id鍒板壀鍒囨澘
 const copyId = (id: string | number) => {
   if (!id) return
   const text = String(id)
@@ -300,10 +309,10 @@ const copyId = (id: string | number) => {
     navigator.clipboard.writeText(text).then(() => {
       message.success('已复制')
     }, () => {
-      message.error('复制失败')
+      message.error('澶嶅埗澶辫触')
     })
   } else {
-    // 兼容不支持 clipboard 的环境
+    // 鍏煎涓嶆敮鎸?clipboard 鐨勭幆澧?
     const input = document.createElement('input')
     input.value = text
     document.body.appendChild(input)
@@ -312,13 +321,13 @@ const copyId = (id: string | number) => {
       document.execCommand('copy')
       message.success('已复制')
     } catch (e) {
-      message.error('复制失败')
+      message.error('澶嶅埗澶辫触')
     }
     document.body.removeChild(input)
   }
 }
 
-// 暴露重置方法，供父组件调用
+// 鏆撮湶閲嶇疆鏂规硶锛屼緵鐖剁粍浠惰皟鐢?
 defineExpose({
   resetObserver
 })
@@ -354,3 +363,4 @@ defineExpose({
   pointer-events: none;
 }
 </style>
+

@@ -15,8 +15,8 @@ export default class PictureEditWebSocket {
   connect() {
     // const DEV_BASE_URL = "ws://localhost:8123";
     // 线上地址
-    const PROD_BASE_URL = "wss://collabimage.afishingcat.xin";
-    const url = `${PROD_BASE_URL}/api/ws/picture/edit?pictureId=${this.pictureId}`
+    const baseUrl = import.meta.env.DEV ? 'ws://localhost:8123' : 'wss://collabimage.afishingcat.xin'
+    const url = `${baseUrl}/api/ws/picture/edit?pictureId=${this.pictureId}`
     this.socket = new WebSocket(url)
 
     // 设置携带 cookie

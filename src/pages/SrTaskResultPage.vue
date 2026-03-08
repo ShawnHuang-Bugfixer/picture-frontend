@@ -22,8 +22,15 @@
           <a-input
             v-model:value="searchParams.modelName"
             allow-clear
-            placeholder="例如 RealESRGAN_x4plus"
+            placeholder="例如 realesr-animevideov3"
             style="width: 220px"
+          />
+        </a-form-item>
+        <a-form-item label="类型">
+          <a-select
+            v-model:value="searchParams.bizType"
+            :options="bizTypeOptions"
+            style="width: 140px"
           />
         </a-form-item>
         <a-form-item>
@@ -48,20 +55,28 @@
         <template #renderItem="{ item }">
           <a-list-item>
             <a-card hoverable>
+              <video
+                v-if="isVideoResult(item)"
+                :src="item.outputUrl"
+                controls
+                style="width: 100%; height: 180px; object-fit: cover"
+              />
               <a-image
+                v-else
                 :src="item.outputUrl"
                 alt="sr-result"
                 style="width: 100%; height: 180px; object-fit: cover"
               />
               <div class="meta">
                 <div><span class="label">任务号：</span>{{ item.taskNo || '-' }}</div>
+                <div><span class="label">类型：</span>{{ item.bizType || '-' }}</div>
                 <div><span class="label">模型：</span>{{ item.modelName || '-' }}</div>
                 <div><span class="label">耗时：</span>{{ item.costMs ?? '-' }} ms</div>
                 <div v-if="isTeamSpace">
                   <span class="label">创建者：</span>{{ item.userId ?? '-' }}
                 </div>
                 <a-space style="margin-top: 8px">
-                  <a :href="item.outputUrl" target="_blank">查看原图</a>
+                  <a :href="item.outputUrl" target="_blank">查看原文件</a>
                   <a :href="item.outputUrl" download>下载</a>
                 </a-space>
               </div>
@@ -109,12 +124,19 @@ const dataList = ref<SrTaskResultVO[]>([])
 const space = ref<API.SpaceVO>({})
 const permissionList = ref<string[]>([])
 const loginUser = ref<API.LoginUserVO>()
+const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
+const bizTypeOptions = [
+  { label: '全部', value: undefined },
+  { label: '图片', value: 'image' },
+  { label: '视频', value: 'video' },
+]
 
 const searchParams = reactive({
   current: 1,
   pageSize: 12,
   taskNo: undefined as string | undefined,
   modelName: undefined as string | undefined,
+  bizType: 'video' as 'image' | 'video' | undefined,
 })
 
 const isTeamSpace = computed(() => space.value.spaceType === 1)
@@ -125,6 +147,14 @@ const hasViewPermission = computed(() => {
   }
   return permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_VIEW_IMAGE)
 })
+
+const isVideoResult = (item: SrTaskResultVO) => {
+  if (item.bizType === 'video') {
+    return true
+  }
+  const format = (item.outputFormat || '').toLowerCase()
+  return videoFormatSet.has(format)
+}
 
 const checkAccess = async () => {
   const loginRes = await getLoginUserUsingGet()
@@ -141,7 +171,7 @@ const checkAccess = async () => {
     throw new Error('请先登录')
   }
   const permissionRes = await getPermissionsUsingPost({
-    spaceId: props.id,
+    spaceId: props.id as unknown as number,
     userId: loginUser.value.id,
   })
   if (permissionRes.data.code === 0 && permissionRes.data.data) {
@@ -162,17 +192,18 @@ const fetchData = async () => {
         pageSize: searchParams.pageSize,
         taskNo: searchParams.taskNo,
         modelName: searchParams.modelName,
+        bizType: searchParams.bizType,
       })
       if (res.data.code === 0 && res.data.data) {
         dataList.value = res.data.data.records ?? []
         total.value = res.data.data.total ?? 0
       } else {
-        message.error('加载超分结果失败，' + (res.data.message || '请稍后重试'))
+        message.error(`加载超分结果失败，${res.data.message || '请稍后重试'}`)
       }
       return
     }
     const res = await listMySrTaskResultVoByPageUsingPost({
-      bizType: 'image',
+      bizType: searchParams.bizType,
       current: searchParams.current,
       pageSize: searchParams.pageSize,
       taskNo: searchParams.taskNo,
@@ -182,7 +213,7 @@ const fetchData = async () => {
       dataList.value = res.data.data.records ?? []
       total.value = res.data.data.total ?? 0
     } else {
-      message.error('加载超分结果失败，' + (res.data.message || '请稍后重试'))
+      message.error(`加载超分结果失败，${res.data.message || '请稍后重试'}`)
     }
   } finally {
     loading.value = false
@@ -199,6 +230,7 @@ const resetSearch = () => {
   searchParams.pageSize = 12
   searchParams.taskNo = undefined
   searchParams.modelName = undefined
+  searchParams.bizType = 'video'
   fetchData()
 }
 
@@ -210,8 +242,9 @@ onMounted(async () => {
   try {
     await checkAccess()
     await fetchData()
-  } catch (e: any) {
-    message.error(e?.message || '加载超分结果失败')
+  } catch (e: unknown) {
+    const errorMessage = e instanceof Error ? e.message : '加载超分结果失败'
+    message.error(errorMessage)
   }
 })
 </script>

@@ -1,11 +1,17 @@
 import request from '@/request.ts'
 
 export interface SrTaskCreateRequest {
+  type?: 'image' | 'video'
   pictureId?: string | number
   inputFileKey?: string
   scale?: 2 | 4
   modelName?: string
   modelVersion?: string
+  videoOptions?: {
+    keepAudio?: boolean
+    extractFrameFirst?: boolean
+    fpsOverride?: number
+  }
 }
 
 export interface SrTaskVO {
@@ -66,7 +72,7 @@ export interface SrTaskResultQueryRequest {
   current?: number
   pageSize?: number
   taskNo?: string
-  bizType?: 'image'
+  bizType?: 'image' | 'video'
   modelName?: string
   startTime?: string
   endTime?: string
@@ -77,6 +83,7 @@ export interface SrTaskSpaceResultQueryRequest {
   current?: number
   pageSize?: number
   taskNo?: string
+  bizType?: 'image' | 'video'
   modelName?: string
   startTime?: string
   endTime?: string

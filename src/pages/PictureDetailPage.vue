@@ -4,7 +4,13 @@
       <!-- 图片预览 -->
       <a-col :sm="24" :md="16" :xl="18">
         <a-card title="图片预览">
-          <a-image :src="picture.url" style="max-height: 600px; object-fit: contain" />
+          <video
+            v-if="isVideoPicture"
+            :src="picture.url || ''"
+            style="width: 100%; max-height: 600px; object-fit: contain"
+            controls
+          />
+          <a-image v-else :src="picture.url" style="max-height: 600px; object-fit: contain" />
         </a-card>
       </a-col>
       <!-- 图片信息区域 -->
@@ -107,6 +113,11 @@ interface Props {
 
 const props = defineProps<Props>()
 const picture = ref<API.PictureVO>({})
+const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
+const isVideoPicture = computed(() => {
+  const format = (picture.value.picFormat || '').toLowerCase()
+  return videoFormatSet.has(format)
+})
 
 // 登录用户信息
 const loginUser = ref<API.LoginUserVO>()

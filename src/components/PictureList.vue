@@ -14,7 +14,15 @@
           <a-list-item style="padding: 0">
             <a-card class="picture-card" hoverable @click="doClickPicture(slotProps.item)">
               <template #cover>
+                <video
+                  v-if="isVideoItem(slotProps.item)"
+                  :src="slotProps.item.thumbnailUrl ?? slotProps.item.url"
+                  class="picture-img"
+                  muted
+                  playsinline
+                />
                 <img
+                  v-else
                   :alt="slotProps.item.name"
                   :src="slotProps.item.thumbnailUrl ?? slotProps.item.url"
                   class="picture-img"
@@ -106,6 +114,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['loading-change'])
+const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
 
 const router = useRouter()
 const pictures = ref<API.PictureVO[]>([])
@@ -288,6 +297,11 @@ const doDelete = async (picture: API.PictureVO, e: Event) => {
 const doSuperResolution = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   props.onSuperResolution?.(picture)
+}
+
+const isVideoItem = (picture: API.PictureVO) => {
+  const format = (picture.picFormat || '').toLowerCase()
+  return videoFormatSet.has(format)
 }
 
 // ----- 鍒嗕韩鎿嶄綔 ----

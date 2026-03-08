@@ -5,18 +5,26 @@
       :show-upload-list="false"
       :custom-request="handleUpload"
       :before-upload="beforeUpload"
+      accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/x-matroska,video/x-msvideo,video/webm,video/x-m4v,.mp4,.mov,.mkv,.avi,.webm,.m4v"
     >
-      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
+      <video
+        v-if="isVideoPicture && picture?.url"
+        :src="picture?.url"
+        class="preview-media"
+        controls
+      />
+      <img v-else-if="picture?.url" :src="picture?.url" alt="preview" class="preview-media" />
       <div v-else>
-        <loading-outlined v-if="loading"></loading-outlined>
-        <plus-outlined v-else></plus-outlined>
-        <div class="ant-upload-text">点击或拖拽上传图片</div>
+        <loading-outlined v-if="loading" />
+        <plus-outlined v-else />
+        <div class="ant-upload-text">点击或拖拽上传图片 / 视频</div>
       </div>
     </a-upload>
   </div>
 </template>
+
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
@@ -30,67 +38,92 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const loading = ref<boolean>(false)
+const uploadMediaType = ref<'image' | 'video'>('image')
+type UploadResponse = { data: API.BaseResponsePictureVO_ }
 
-/**
- * 上传图片
- * @param file
- */
-const handleUpload = async ({ file }: any) => {
+const imageTypeSet = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+const videoExtSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
+
+const isVideoPicture = computed(() => {
+  const ext = (props.picture?.picFormat || '').toLowerCase()
+  return videoExtSet.has(ext)
+})
+
+const getExt = (name: string) => {
+  const i = name.lastIndexOf('.')
+  return i >= 0 ? name.slice(i + 1).toLowerCase() : ''
+}
+
+const checkFileType = (file: File) => {
+  if (imageTypeSet.has(file.type)) {
+    return 'image' as const
+  }
+  const ext = getExt(file.name)
+  if (videoExtSet.has(ext) || file.type.startsWith('video/')) {
+    return 'video' as const
+  }
+  return undefined
+}
+
+const handleUpload = async ({ file }: { file: File }) => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-    params.spaceId = props.spaceId;
-    const res = await uploadPictureUsingPost(params, {}, file)
+    params.spaceId = props.spaceId
+    const body = uploadMediaType.value === 'video' ? { mediaType: 'video' } : {}
+    const res = (await uploadPictureUsingPost(params, body, file)) as UploadResponse
     if (res.data.code === 0 && res.data.data) {
-      message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
+      message.success(uploadMediaType.value === 'video' ? '视频上传成功' : '图片上传成功')
       props.onSuccess?.(res.data.data)
     } else {
-      message.error('图片上传失败，' + res.data.message)
+      message.error(`上传失败，${res.data.message || '请稍后重试'}`)
     }
-  } catch (error) {
-    console.error('图片上传失败', error)
-    message.error('图片上传失败，' + error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error(`上传失败，${errorMessage}`)
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 
-const loading = ref<boolean>(false)
-
-/**
- * 上传前的校验 + 获取一次性 token
- * @param file
- */
 const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
-  // 校验格式
-  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
-  if (!isJpgOrPng) {
-    message.error('不支持上传该格式的图片，推荐 jpg 或 png')
+  const fileType = checkFileType(file as File)
+  if (!fileType) {
+    message.error('仅支持图片（jpg/png/webp/gif）或视频（mp4/mov/mkv/avi/webm/m4v）')
     return false
   }
-  // 校验大小
-  const isLt2M = file.size / 1024 / 1024 < 2
-  if (!isLt2M) {
-    message.error('不能上传超过 2M 的图片')
-    return false
+  uploadMediaType.value = fileType
+
+  if (fileType === 'image') {
+    const isLt2M = file.size / 1024 / 1024 < 2
+    if (!isLt2M) {
+      message.error('图片大小不能超过 2MB')
+      return false
+    }
+  } else {
+    const isLt200M = file.size / 1024 / 1024 <= 200
+    if (!isLt200M) {
+      message.error('视频大小不能超过 200MB')
+      return false
+    }
   }
 
-  // 调用一次性 token 接口
   try {
     const res = await getOnceTokenUsingGet()
     if (res.data.code === 0 && res.data.data) {
-      return true // 可以继续上传
-    } else {
-      message.error('获取一次性 Token 失败：' + res.data.message)
-      return false
+      return true
     }
-  } catch (err) {
-    console.error('获取一次性 Token 失败', err)
-    message.error('获取一次性 Token 失败：' + err.message)
+    message.error(`获取一次性 Token 失败，${res.data.message || '请稍后重试'}`)
+    return false
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error(`获取一次性 Token 失败，${errorMessage}`)
     return false
   }
 }
 </script>
+
 <style scoped>
 .picture-upload :deep(.ant-upload) {
   width: 100% !important;
@@ -99,9 +132,10 @@ const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
   min-height: 152px;
 }
 
-.picture-upload img {
-  max-width: 100%;
+.preview-media {
+  width: 100%;
   max-height: 480px;
+  object-fit: contain;
 }
 
 .ant-upload-select-picture-card i {

@@ -1,7 +1,7 @@
 <template>
   <a-modal
     v-model:open="visible"
-    title="AI 超分"
+    title="提交超分任务"
     :confirm-loading="submitLoading"
     ok-text="提交任务"
     cancel-text="取消"
@@ -9,7 +9,7 @@
     @cancel="closeModal"
   >
     <a-form layout="vertical">
-      <a-form-item label="资源 ID">
+      <a-form-item label="素材 ID">
         <a-input :value="String(props.picture?.id ?? '')" disabled />
       </a-form-item>
       <a-form-item label="任务类型">
@@ -27,7 +27,7 @@
           <a-select
             v-model:value="formState.modelName"
             :options="videoModelOptions"
-            placeholder="请选择视频超分模型"
+            placeholder="选择视频超分模型"
           />
         </a-form-item>
         <a-form-item label="保留音频">
@@ -87,7 +87,7 @@ const formState = reactive({
 
 const handleSubmit = async () => {
   if (!props.picture?.id) {
-    message.error('缺少资源 ID，无法提交超分任务')
+    message.error('缺少素材 ID，无法提交超分任务')
     return
   }
   if (formState.fpsOverride !== undefined && formState.fpsOverride <= 0) {
@@ -117,15 +117,16 @@ const handleSubmit = async () => {
           modelName: 'RealESRGAN_x4plus',
           modelVersion: formState.modelVersion,
         }
+
     const res = await createSrTaskUsingPost(body)
     if (res.data.code === 0 && res.data.data) {
       const taskId = String(res.data.data)
       message.success(`超分任务已提交，任务 ID：${taskId}`)
       props.onSuccess?.(taskId)
       closeModal()
-    } else {
-      message.error(`提交失败，${res.data.message || '请稍后重试'}`)
+      return
     }
+    message.error(`提交失败，${res.data.message || '请稍后重试'}`)
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '请稍后重试'
     message.error(`提交失败，${errorMessage}`)
@@ -137,12 +138,10 @@ const handleSubmit = async () => {
 const openModal = () => {
   formState.scale = 4
   formState.modelVersion = 'v1.0.0'
-  if (isVideoTask.value) {
-    formState.modelName = 'realesr-animevideov3'
-    formState.keepAudio = true
-    formState.extractFrameFirst = true
-    formState.fpsOverride = undefined
-  }
+  formState.modelName = 'realesr-animevideov3'
+  formState.keepAudio = true
+  formState.extractFrameFirst = true
+  formState.fpsOverride = undefined
   visible.value = true
 }
 

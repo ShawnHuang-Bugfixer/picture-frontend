@@ -1,54 +1,105 @@
 <template>
-  <div id="addPicturePage">
-    <h2 style="margin-bottom: 16px">
-      {{ route.query?.id ? '修改图片' : '创建图片' }}
-    </h2>
-    <a-typography-paragraph v-if="spaceId" type="secondary">
-      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
-    </a-typography-paragraph>
-    <!-- 选择上传方式 -->
-    <a-tabs v-model:activeKey="uploadType">
-      <a-tab-pane key="file" tab="文件上传">
-        <!-- 图片上传组件 -->
-        <PictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
-      </a-tab-pane>
-      <a-tab-pane key="url" tab="URL 上传" force-render>
-        <!-- URL 图片上传组件 -->
-        <UrlPictureUpload :picture="picture" :spaceId="spaceId" :onSuccess="onSuccess" />
-      </a-tab-pane>
-    </a-tabs>
-    <!-- 图片编辑 -->
-    <div v-if="picture" class="edit-bar">
-      <a-space size="middle">
-        <a-button :icon="h(EditOutlined)" @click="doEditPicture">裁剪图片</a-button>
-        <a-button type="primary" :icon="h(FullscreenOutlined)" @click="doImagePainting">
-          AI 扩图
-        </a-button>
-        <a-button @click="showEditInfoModal = true">修改图片信息</a-button>
-      </a-space>
-      <ImageCropper
-        ref="imageCropperRef"
-        :imageUrl="picture?.url"
-        :picture="picture"
-        :spaceId="spaceId"
-        :space="space"
-        :onSuccess="onCropSuccess"
-      />
-      <ImageOutPainting
-        ref="imageOutPaintingRef"
-        :picture="picture"
-        :spaceId="spaceId"
-        :onSuccess="onImageOutPaintingSuccess"
-      />
+  <div id="addPicturePage" class="app-page">
+    <section class="app-page__hero">
+      <div>
+        <h2 class="app-page__title">{{ pictureId ? '编辑素材' : '发起超分任务' }}</h2>
+        <p class="app-page__subtitle">
+          在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图与后续超分准备。
+        </p>
+      </div>
+      <div class="app-page__actions" v-if="resolvedSpaceId">
+        <a-button :href="`/space/${resolvedSpaceId}`" target="_blank">返回工作空间</a-button>
+      </div>
+    </section>
+
+    <div class="task-grid">
+      <section class="app-card upload-card">
+        <div class="card-head">
+          <h3 class="app-section-title">任务素材</h3>
+          <p class="app-section-desc">支持文件上传和 URL 导入，图片与视频统一进入素材流。</p>
+        </div>
+        <a-tabs v-model:activeKey="uploadType">
+          <a-tab-pane key="file" tab="文件上传">
+            <PictureUpload :picture="picture" :spaceId="resolvedSpaceId" :onSuccess="onSuccess" />
+          </a-tab-pane>
+          <a-tab-pane key="url" tab="URL 导入" force-render>
+            <UrlPictureUpload :picture="picture" :spaceId="resolvedSpaceId" :onSuccess="onSuccess" />
+          </a-tab-pane>
+        </a-tabs>
+      </section>
+
+      <section class="app-card info-card">
+        <div class="card-head">
+          <h3 class="app-section-title">任务信息</h3>
+          <p class="app-section-desc">录入标题、简介、分类和标签，便于后续检索和案例管理。</p>
+        </div>
+        <a-form name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
+          <a-form-item name="name" label="名称">
+            <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
+          </a-form-item>
+          <a-form-item name="introduction" label="简介">
+            <a-textarea
+              v-model:value="pictureForm.introduction"
+              placeholder="请输入简介"
+              :auto-size="{ minRows: 2, maxRows: 5 }"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item name="category" label="分类">
+            <a-auto-complete
+              v-model:value="pictureForm.category"
+              placeholder="请输入分类"
+              :options="categoryOptions"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item name="tags" label="标签">
+            <a-select
+              v-model:value="pictureForm.tags"
+              mode="tags"
+              placeholder="输入标签"
+              :options="tagOptions"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" html-type="submit" style="width: 100%" :disabled="!picture?.id">
+              保存信息
+            </a-button>
+          </a-form-item>
+        </a-form>
+      </section>
     </div>
-    <!-- 图片信息表单弹窗 -->
-    <a-modal v-model:open="showEditInfoModal" title="图片信息" :footer="null" @cancel="showEditInfoModal = false">
-      <a-form
-        name="pictureForm"
-        layout="vertical"
-        :model="pictureForm"
-        @finish="handleSubmitModal"
-      >
+
+    <section v-if="picture?.id" class="app-card tool-card">
+      <div class="card-head">
+        <h3 class="app-section-title">后续处理</h3>
+        <p class="app-section-desc">上传成功后即可进入裁剪、扩图等步骤，为超分任务做准备。</p>
+      </div>
+      <div class="tool-actions">
+        <a-button @click="doEditPicture">裁剪素材</a-button>
+        <a-button type="primary" ghost @click="doImagePainting">AI 扩图</a-button>
+        <a-button @click="showEditInfoModal = true">再次编辑信息</a-button>
+      </div>
+    </section>
+
+    <ImageCropper
+      ref="imageCropperRef"
+      :imageUrl="picture?.url"
+      :picture="picture"
+      :spaceId="resolvedSpaceId"
+      :space="space"
+      :onSuccess="onCropSuccess"
+    />
+    <ImageOutPainting
+      ref="imageOutPaintingRef"
+      :picture="picture"
+      :spaceId="resolvedSpaceId"
+      :onSuccess="onImageOutPaintingSuccess"
+    />
+
+    <a-modal v-model:open="showEditInfoModal" title="素材信息" :footer="null" @cancel="showEditInfoModal = false">
+      <a-form name="pictureModalForm" layout="vertical" :model="pictureForm" @finish="handleSubmitModal">
         <a-form-item name="name" label="名称">
           <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
         </a-form-item>
@@ -69,13 +120,7 @@
           />
         </a-form-item>
         <a-form-item name="tags" label="标签">
-          <a-select
-            v-model:value="pictureForm.tags"
-            mode="tags"
-            placeholder="请输入标签"
-            :options="tagOptions"
-            allow-clear
-          />
+          <a-select v-model:value="pictureForm.tags" mode="tags" :options="tagOptions" allow-clear />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
@@ -86,185 +131,175 @@
 </template>
 
 <script setup lang="ts">
-import PictureUpload from '@/components/PictureUpload.vue'
-import { computed, h, onMounted, reactive, ref, watchEffect } from 'vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { message } from 'ant-design-vue'
+import { useRoute, useRouter } from 'vue-router'
+import PictureUpload from '@/components/PictureUpload.vue'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
+import ImageCropper from '@/components/ImageCropper.vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
   listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
-import { useRoute, useRouter } from 'vue-router'
-import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import ImageCropper from '@/components/ImageCropper.vue'
-import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
-import ImageOutPainting from '@/components/ImageOutPainting.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+
+type SelectOption = {
+  value: string
+  label: string
+}
 
 const router = useRouter()
 const route = useRoute()
 
 const picture = ref<API.PictureVO>()
-const pictureForm = reactive<API.PictureEditRequest>({})
+const pictureForm = reactive<API.PictureEditRequest>({
+  tags: [],
+})
 const uploadType = ref<'file' | 'url'>('file')
-// 空间 id
-const spaceId = computed(() => {
-  return route.query?.spaceId
+const categoryOptions = ref<SelectOption[]>([])
+const tagOptions = ref<SelectOption[]>([])
+const space = ref<API.SpaceVO>()
+const showEditInfoModal = ref(false)
+const imageCropperRef = ref()
+const imageOutPaintingRef = ref()
+
+const resolvedSpaceId = computed(() => {
+  const rawId = route.query?.spaceId
+  return rawId ? Number(rawId) : undefined
 })
 
-/**
- * 图片上传成功
- * @param newPicture
- */
+const pictureId = computed(() => {
+  const rawId = route.query?.id
+  return rawId ? Number(rawId) : undefined
+})
+
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
   pictureForm.name = newPicture.name
+  pictureForm.introduction = newPicture.introduction
+  pictureForm.category = newPicture.category
+  pictureForm.tags = newPicture.tags
 }
 
-/**
- * 提交表单
- * @param values
- */
-const handleSubmit = async (values: any) => {
-  console.log(values)
-  const pictureId = picture.value.id
-  if (!pictureId) {
+const handleSubmit = async () => {
+  if (!picture.value?.id) return
+
+  const res = await editPictureUsingPost({
+    id: picture.value.id,
+    ...pictureForm,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    message.success('保存成功')
+    router.push({
+      path: `/picture/${picture.value.id}`,
+    })
     return
   }
-  const res = await editPictureUsingPost({
-    id: pictureId,
-    spaceId: spaceId.value,
-    ...values,
-  })
-  // 操作成功
-  if (res.data.code === 0 && res.data.data) {
-    message.success('创建成功')
-    // 跳转到图片详情页
-    router.push({
-      path: `/picture/${pictureId}`,
-    })
-  } else {
-    message.error('创建失败，' + res.data.message)
-  }
+  message.error('保存失败，' + res.data.message)
 }
 
-const categoryOptions = ref<string[]>([])
-const tagOptions = ref<string[]>([])
-
-/**
- * 获取标签和分类选项
- * @param values
- */
 const getTagCategoryOptions = async () => {
   const res = await listPictureTagCategoryUsingGet()
   if (res.data.code === 0 && res.data.data) {
-    tagOptions.value = (res.data.data.tagList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
-    categoryOptions.value = (res.data.data.categoryList ?? []).map((data: string) => {
-      return {
-        value: data,
-        label: data,
-      }
-    })
-  } else {
-    message.error('获取标签分类列表失败，' + res.data.message)
+    tagOptions.value = (res.data.data.tagList ?? []).map((item: string) => ({
+      value: item,
+      label: item,
+    }))
+    categoryOptions.value = (res.data.data.categoryList ?? []).map((item: string) => ({
+      value: item,
+      label: item,
+    }))
+    return
   }
+  message.error('获取标签与分类失败，' + res.data.message)
 }
 
-onMounted(() => {
-  getTagCategoryOptions()
-})
-
-// 获取老数据
 const getOldPicture = async () => {
-  // 获取到 id
-  const id = route.query?.id
-  if (id) {
-    const res = await getPictureVoByIdUsingGet({
-      id,
-    })
-    if (res.data.code === 0 && res.data.data) {
-      const data = res.data.data
-      picture.value = data
-      pictureForm.name = data.name
-      pictureForm.introduction = data.introduction
-      pictureForm.category = data.category
-      pictureForm.tags = data.tags
-    }
+  if (!pictureId.value) return
+
+  const res = await getPictureVoByIdUsingGet({
+    id: pictureId.value,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    const data = res.data.data
+    picture.value = data
+    pictureForm.name = data.name
+    pictureForm.introduction = data.introduction
+    pictureForm.category = data.category
+    pictureForm.tags = data.tags
   }
 }
 
-onMounted(() => {
-  getOldPicture()
-})
-
-// ----- 图片编辑器引用 ------
-const imageCropperRef = ref()
-
-// 编辑图片
-const doEditPicture = async () => {
+const doEditPicture = () => {
   imageCropperRef.value?.openModal()
 }
 
-// 编辑成功事件
 const onCropSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
 
-// ----- AI 扩图引用 -----
-const imageOutPaintingRef = ref()
-
-// 打开 AI 扩图弹窗
-const doImagePainting = async () => {
+const doImagePainting = () => {
   imageOutPaintingRef.value?.openModal()
 }
 
-// AI 扩图保存事件
 const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
 
-// 获取空间信息
-const space = ref<API.SpaceVO>()
-
-// 获取空间信息
 const fetchSpace = async () => {
-  // 获取数据
-  if (spaceId.value) {
-    const res = await getSpaceVoByIdUsingGet({
-      id: spaceId.value,
-    })
-    if (res.data.code === 0 && res.data.data) {
-      space.value = res.data.data
-    }
+  if (!resolvedSpaceId.value) return
+
+  const res = await getSpaceVoByIdUsingGet({
+    id: resolvedSpaceId.value,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    space.value = res.data.data
   }
+}
+
+const handleSubmitModal = async () => {
+  await handleSubmit()
+  showEditInfoModal.value = false
 }
 
 watchEffect(() => {
   fetchSpace()
 })
 
-const showEditInfoModal = ref(false)
-
-// 用于弹窗表单的提交
-const handleSubmitModal = async (values: any) => {
-  await handleSubmit(values)
-  showEditInfoModal.value = false
-}
+onMounted(() => {
+  getTagCategoryOptions()
+  getOldPicture()
+})
 </script>
 
-<style scoped>
-#addPicturePage {
-  max-width: 720px;
-  margin: 0 auto;
+<style scoped lang="less">
+.task-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+  gap: 20px;
 }
 
-#addPicturePage .edit-bar {
-  text-align: center;
-  margin: 16px 0;
+.upload-card,
+.info-card,
+.tool-card {
+  padding: 24px;
+}
+
+.card-head {
+  margin-bottom: 18px;
+}
+
+.tool-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 1080px) {
+  .task-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

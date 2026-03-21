@@ -1,92 +1,76 @@
 <template>
-  <!-- 模板部分保持不变 -->
-  <div id="addPictureBatchPage">
-    <h2 style="margin-bottom: 16px">批量创建</h2>
-    <!-- 图片信息表单 -->
-    <a-form name="formData" layout="vertical" :model="formData" @finish="handleSubmit">
-      <a-form-item name="searchText" label="关键词">
-        <a-input v-model:value="formData.searchText" placeholder="请输入关键词" allow-clear />
-      </a-form-item>
-      <a-form-item name="count" label="抓取数量">
-        <a-input-number
-          v-model:value="formData.count"
-          placeholder="请输入数量"
-          style="min-width: 180px"
-          :min="1"
-          :max="30"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item name="namePrefix" label="名称前缀">
-        <a-input
-          v-model:value="formData.namePrefix"
-          placeholder="请输入名称前缀，会自动补充序号"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit" style="width: 100%" :loading="loading">
-          执行任务
-        </a-button>
-      </a-form-item>
-    </a-form>
+  <div id="addPictureBatchPage" class="app-page">
+    <section class="app-page__hero">
+      <div>
+        <h2 class="app-page__title">批量任务提交</h2>
+        <p class="app-page__subtitle">通过关键词抓取批量导入素材，统一落入你的任务链路中。</p>
+      </div>
+    </section>
+
+    <section class="app-form-card">
+      <a-form name="formData" layout="vertical" :model="formData" @finish="handleSubmit">
+        <a-form-item name="searchText" label="关键词">
+          <a-input v-model:value="formData.searchText" placeholder="请输入抓取关键词" allow-clear />
+        </a-form-item>
+        <a-form-item name="count" label="抓取数量">
+          <a-input-number
+            v-model:value="formData.count"
+            placeholder="请输入数量"
+            style="width: 100%"
+            :min="1"
+            :max="30"
+          />
+        </a-form-item>
+        <a-form-item name="namePrefix" label="名称前缀">
+          <a-input v-model:value="formData.namePrefix" placeholder="会自动补齐序号" allow-clear />
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" html-type="submit" style="width: 100%" :loading="loading">
+            执行任务
+          </a-button>
+        </a-form-item>
+      </a-form>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import {
-  getPictureVoByIdUsingGet,
-  listPictureTagCategoryUsingGet,
-  uploadPictureByBatchUsingPost,
-} from '@/api/pictureController.ts'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { uploadPictureByBatchUsingPost } from '@/api/pictureController.ts'
 
 const formData = reactive<API.PictureUploadByBatchRequest>({
   count: 10,
 })
-// 提交任务状态
 const loading = ref(false)
-
 const router = useRouter()
 
-/**
- * 提交表单
- * @param values
- */
-const handleSubmit = async (values: any) => {
+const handleSubmit = async () => {
   loading.value = true
   try {
-    const res = await uploadPictureByBatchUsingPost({
-      ...formData,
-    }, {
-      timeout: 300000 // 设置5分钟超时
-    })
+    const res = await uploadPictureByBatchUsingPost(
+      {
+        ...formData,
+      },
+      {
+        timeout: 300000,
+      },
+    )
 
-    // 操作成功
     if (res.data?.code === 0 && res.data?.data !== undefined) {
-      message.success(`创建成功，共 ${res.data.data} 条`)
-      // 跳转到主页
+      message.success(`批量创建成功，共 ${res.data.data} 条`)
       router.push({
-        path: `/`,
+        path: '/',
       })
-    } else {
-      message.error('创建失败，' + (res.data?.message || '未知错误'))
+      return
     }
-  } catch (error) {
-    console.error('请求错误:', error)
-    message.error('请求失败: ' + (error.message || '网络或服务器错误'))
+    message.error('批量创建失败，' + (res.data?.message || '未知错误'))
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '网络或服务错误'
+    message.error('请求失败：' + errorMessage)
   } finally {
     loading.value = false
   }
 }
 </script>
-
-<style scoped>
-/* 样式部分保持不变 */
-#addPictureBatchPage {
-  max-width: 720px;
-  margin: 0 auto;
-}
-</style>

@@ -1,6 +1,6 @@
 <template>
-  <div class="space-tag-analyze">
-    <a-card title="空间图片标签分析">
+  <div class="analyze-shell">
+    <a-card title="素材标签分析">
       <v-chart :option="options" style="height: 320px; max-width: 100%" :loading="loading" />
     </a-card>
   </div>
@@ -11,8 +11,8 @@ import VChart from 'vue-echarts'
 import 'echarts'
 import 'echarts-wordcloud'
 import { computed, ref, watchEffect } from 'vue'
-import { getSpaceTagAnalyzeUsingPost } from '@/api/spaceAnalyzeController.ts'
 import { message } from 'ant-design-vue'
+import { getSpaceTagAnalyzeUsingPost } from '@/api/spaceAnalyzeController.ts'
 
 interface Props {
   queryAll?: boolean
@@ -20,64 +20,61 @@ interface Props {
   spaceId?: number
 }
 
+type TagAnalyzeItem = {
+  tag?: string
+  count?: number
+}
+
 const props = withDefaults(defineProps<Props>(), {
   queryAll: false,
   queryPublic: false,
 })
 
-// 图表数据
-const dataList = ref<API.SpaceCategoryAnalyzeResponse>([])
-// 加载状态
+const dataList = ref<TagAnalyzeItem[]>([])
 const loading = ref(true)
 
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
   const res = await getSpaceTagAnalyzeUsingPost({
     queryAll: props.queryAll,
     queryPublic: props.queryPublic,
     spaceId: props.spaceId,
   })
   if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
+    dataList.value = res.data.data as unknown as TagAnalyzeItem[]
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取分析数据失败，' + res.data.message)
   }
   loading.value = false
 }
 
-/**
- * 监听变量，参数改变时触发数据的重新加载
- */
 watchEffect(() => {
   fetchData()
 })
 
-// 图表选项
-const options =computed(() => {
+const options = computed(() => {
   const tagData = dataList.value.map((item) => ({
-    name: item.tag,
-    value: item.count,
+    name: item.tag || '未标记',
+    value: item.count ?? 0,
   }))
 
   return {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) => `${params.name}: ${params.value} 次`,
+      formatter: (params: { name: string; value: number }) => `${params.name}: ${params.value} 次`,
     },
     series: [
       {
         type: 'wordCloud',
         gridSize: 10,
-        sizeRange: [12, 50], // 字体大小范围
+        sizeRange: [12, 50],
         rotationRange: [-90, 90],
         shape: 'circle',
         textStyle: {
           color: () =>
-              `rgb(${Math.round(Math.random() * 255)}, ${Math.round(
-                  Math.random() * 255,
-              )}, ${Math.round(Math.random() * 255)})`, // 随机颜色
+            `rgb(${Math.round(Math.random() * 255)}, ${Math.round(
+              Math.random() * 255,
+            )}, ${Math.round(Math.random() * 255)})`,
         },
         data: tagData,
       },
@@ -86,4 +83,8 @@ const options =computed(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+.analyze-shell :deep(.ant-card) {
+  height: 100%;
+}
+</style>

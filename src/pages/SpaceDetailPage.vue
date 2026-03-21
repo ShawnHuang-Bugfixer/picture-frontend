@@ -1,83 +1,83 @@
 <template>
-  <div id="spaceDetailPage">
-    <!-- 空间信息 -->
-    <a-flex justify="space-between">
-      <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
-      <a-space size="middle">
-        <a-button
-          v-if="canUploadPicture"
-          type="primary"
-          :href="`/add_picture?spaceId=${id}`"
-          target="_blank"
-        >
-          + 创建图片
+  <div id="spaceDetailPage" class="app-page">
+    <section class="app-page__hero">
+      <div>
+        <h2 class="app-page__title">{{ space.spaceName || '工作空间' }}</h2>
+        <p class="app-page__subtitle">{{ spaceTypeTitle }}，在这里集中查看素材、权限、结果和协作动作。</p>
+      </div>
+      <div class="app-page__actions">
+        <a-button v-if="canUploadPicture" type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
+          发起任务
         </a-button>
-        <a-button
-          v-if="canManageSpaceUser"
-          type="primary"
-          ghost
-          :icon="h(TeamOutlined)"
-          :href="`/spaceUserManage/${id}`"
-          target="_blank"
-        >
+        <a-button v-if="canManageSpaceUser" :icon="h(TeamOutlined)" :href="`/spaceUserManage/${id}`" target="_blank">
           成员管理
         </a-button>
-        <a-button
-          v-if="canAnalyseSpace"
-          type="primary"
-          ghost
-          :icon="h(BarChartOutlined)"
-          :href="`/space_analyze?spaceId=${id}`"
-          target="_blank"
-        >
+        <a-button v-if="canAnalyseSpace" :icon="h(BarChartOutlined)" :href="`/space_analyze?spaceId=${id}`" target="_blank">
           空间分析
         </a-button>
-        <a-button v-if="canViewSrResult" type="primary" ghost @click="goToSrResultPage">
-          超分结果
-        </a-button>
-        <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit"> 批量编辑</a-button>
-        <a-tooltip
-          :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
-        >
-          <a-progress
-            type="circle"
-            :size="42"
-            :percent="((space.totalSize * 100) / space.maxSize).toFixed(1)"
-          />
-        </a-tooltip>
-      </a-space>
+        <a-button v-if="canViewSrResult" @click="goToSrResultPage">结果中心</a-button>
+        <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit">批量编辑</a-button>
+      </div>
+    </section>
 
-    </a-flex>
-    <div style="margin-bottom: 16px" />
-    <!-- 搜索表单 -->
-    <PictureSearchForm :onSearch="onSearch" />
-    <div style="margin-bottom: 16px" />
-    <!-- 按颜色搜索，跟其他搜索条件独立 -->
-    <a-form-item label="按颜色搜索">
-      <color-picker format="hex" @pureColorChange="onColorChange" />
-    </a-form-item>
-    <!-- 图片列表 -->
-    <PictureList
-      :dataList="dataList"
-      :loading="loading"
-      :showOp="true"
-      :canEdit="canEditPicture"
-      :canDelete="canDeletePicture"
-      :showSuperResolution="canEditPicture"
-      :onSuperResolution="openSuperResolutionModal"
-      :onReload="fetchData"
-    />
-    <!-- 分页 -->
-    <a-pagination
-      style="text-align: right"
-      v-model:current="searchParams.current"
-      v-model:pageSize="searchParams.pageSize"
-      :total="total"
-      @change="onPageChange"
-    />
+    <section class="app-metric-grid">
+      <div class="app-metric">
+        <div class="app-metric__label">空间类型</div>
+        <div class="app-metric__value metric-label">{{ spaceTypeTitle }}</div>
+      </div>
+      <div class="app-metric">
+        <div class="app-metric__label">已用容量</div>
+        <div class="app-metric__value metric-label">{{ formatSize(space.totalSize) }}</div>
+      </div>
+      <div class="app-metric">
+        <div class="app-metric__label">可用上限</div>
+        <div class="app-metric__value metric-label">{{ formatSize(space.maxSize) }}</div>
+      </div>
+      <div class="app-metric">
+        <div class="app-metric__label">容量占比</div>
+        <div class="app-metric__value metric-label">{{ spaceUsagePercent }}%</div>
+      </div>
+    </section>
+
+    <section class="app-card panel-card">
+      <div class="panel-top">
+        <div>
+          <h3 class="app-section-title">素材列表</h3>
+          <p class="app-section-desc">保留现有搜索、颜色检索和分页逻辑，但视觉上归入工作台内容区。</p>
+        </div>
+        <a-progress type="circle" :size="46" :percent="spaceUsagePercentNumber" />
+      </div>
+      <PictureSearchForm :onSearch="onSearch" />
+      <div class="color-filter">
+        <span class="color-filter__label">按颜色检索</span>
+        <color-picker format="hex" @pureColorChange="onColorChange" />
+      </div>
+    </section>
+
+    <section class="app-card panel-card">
+      <PictureList
+        :dataList="dataList"
+        :loading="loading"
+        :showOp="true"
+        :canEdit="canEditPicture"
+        :canDelete="canDeletePicture"
+        :showSuperResolution="canEditPicture"
+        :onSuperResolution="openSuperResolutionModal"
+        :onReload="fetchData"
+      />
+
+      <a-pagination
+        v-model:current="searchParams.current"
+        v-model:pageSize="searchParams.pageSize"
+        style="text-align: right"
+        :total="total"
+        @change="onPageChange"
+      />
+    </section>
+
     <BatchEditPictureModal
       ref="batchEditPictureModalRef"
-      :spaceId="id"
+      :spaceId="spaceId"
       :pictureList="dataList"
       :onSuccess="onBatchEditPictureSuccess"
     />
@@ -90,25 +90,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
+import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { ColorPicker } from 'vue3-colorpicker'
+import 'vue3-colorpicker/style.css'
 import {
   listPictureVoByPageUsingPost,
   searchPictureByColorUsingPost,
 } from '@/api/pictureController.ts'
+import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { getSrTaskVoByIdUsingGet } from '@/api/srTaskController.ts'
-import { formatSize } from '@/utils'
-import PictureList from '@/components/PictureList.vue'
-import PictureSearchForm from '@/components/PictureSearchForm.vue'
-import { ColorPicker } from 'vue3-colorpicker'
-import 'vue3-colorpicker/style.css'
+import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
 import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
 import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
-import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
-import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '../constants/space.ts'
-import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
-import { useRouter } from 'vue-router'
+import PictureList from '@/components/PictureList.vue'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
+import { formatSize } from '@/utils'
 
 interface Props {
   id: string | number
@@ -117,63 +117,61 @@ interface Props {
 const props = defineProps<Props>()
 const router = useRouter()
 const space = ref<API.SpaceVO>({})
-
-// 登录用户信息
 const loginUser = ref<API.LoginUserVO>()
-// 权限列表
 const permissionList = ref<string[]>([])
+const dataList = ref<API.PictureVO[]>([])
+const total = ref(0)
+const loading = ref(true)
 
-/**
- * 前端请求权限列表：
- * 1，前端好像使用了 openapi 自动生成了访问函数，将后端新增的接口补充在前端代码中，要求不修改前端代码，只新增不同的接口。
- * 1.1 前端生成的访问函数：
- * 1.2 后端接口：
- * 1.3 前端代码逻辑：使用 post 向后端接口 localhost:8123/api/user/permission 请求权限列表
- * 1.3.1 后端接收的请求参数
- * public class PermissionListRequest {
- *     private Long spaceId;
- *     private Long userId; // 当前登录用户的 userId
- *     private Long pictureId;
- * }
- * 1.3.1 前端函数的参数列表包含 spaceId, userId, pictureId。其中 userId 为当前登录的用户的 userId
- *
- * 重写前端权限校验逻辑：
- * 1. 问题：登录后的用户如何获取？
- * 2. 重新定义前端的权限枚举类
- * 3. 获取权限集合
- * 4. 校验权限
- * @param permission
- */
+const searchParams = ref<API.PictureQueryRequest>({
+  current: 1,
+  pageSize: 12,
+  sortField: 'createTime',
+  sortOrder: 'descend',
+})
 
-// 获取登录用户信息
-async function fetchLoginUser() {
+const batchEditPictureModalRef = ref()
+const imageSuperResolutionModalRef = ref()
+const currentSuperResolutionPicture = ref<API.PictureVO>()
+const srPollingTimerMap = new Map<string, ReturnType<typeof setInterval>>()
+const SR_TERMINAL_STATUS = new Set(['SUCCEEDED', 'FAILED', 'CANCELLED'])
+
+const spaceId = computed(() => String(props.id))
+const spaceTypeTitle = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
+const spaceUsagePercentNumber = computed(() => {
+  const maxSize = Number(space.value.maxSize || 0)
+  const totalSize = Number(space.value.totalSize || 0)
+  if (!maxSize) {
+    return 0
+  }
+  return Number(((totalSize * 100) / maxSize).toFixed(1))
+})
+const spaceUsagePercent = computed(() => spaceUsagePercentNumber.value.toFixed(1))
+
+const fetchLoginUser = async () => {
   const res = await getLoginUserUsingGet()
   if (res.data.code === 0 && res.data.data) {
     loginUser.value = res.data.data
   }
 }
 
-// 获取权限列表
 const fetchPermissions = async () => {
-  if (!loginUser.value?.id || !props.id) return
-
+  if (!loginUser.value?.id || !spaceId.value) {
+    return
+  }
   try {
     const res = await getPermissionsUsingPost({
-      spaceId: props.id,
+      spaceId: spaceId.value as any,
       userId: loginUser.value.id,
-      pictureId: undefined // 不需要特定图片权限时可不传或传undefined
     })
     if (res.data.code === 0 && res.data.data) {
       permissionList.value = res.data.data
     }
-  } catch (e) {
-    console.error('获取权限失败:', e)
+  } catch (error) {
+    console.error('获取权限失败:', error)
   }
 }
 
-// 根据空间类型检查用户是否有某些操作对应的权限。
-// spaceType == 0 检查 SPACE_PERMISSION_ENUM.PRIVATE_ANALYZE_PERMISSIONS
-// spaceType == 1 检查 SPACE_PERMISSION_ENUM.TEAM_ANALYZE_PERMISSIONS
 const canAnalyseSpace = computed(() => {
   return space.value.spaceType === 0
     ? permissionList.value.includes(SPACE_PERMISSION_ENUM.PRIVATE_ANALYZE_PERMISSIONS)
@@ -198,131 +196,76 @@ const canDeletePicture = computed(() => {
     : permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_DELETE_IMAGE)
 })
 
-const canManageSpaceUser = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_MANAGE_MEMBERS))
+const canManageSpaceUser = computed(() =>
+  permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_MANAGE_MEMBERS),
+)
+
 const canViewSrResult = computed(() => {
   return space.value.spaceType === 0
     ? permissionList.value.includes(SPACE_PERMISSION_ENUM.PRIVATE_VIEW_IMAGE)
     : permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_VIEW_IMAGE)
 })
-// const canUploadPicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_UPLOAD_IMAGE))
-// const canEditPicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_MODIFY_IMAGE))
-// const canDeletePicture = computed(() => permissionList.value.includes(SPACE_PERMISSION_ENUM.TEAM_DELETE_IMAGE))
 
-// -------- 获取空间详情 --------
 const fetchSpaceDetail = async () => {
   try {
     const res = await getSpaceVoByIdUsingGet({
-      id: props.id,
+      id: spaceId.value as any,
     })
     if (res.data.code === 0 && res.data.data) {
       space.value = res.data.data
-    } else {
-      message.error('获取空间详情失败，' + res.data.message)
+      return
     }
-  } catch (e: any) {
-    message.error('获取空间详情失败：' + e.message)
+    message.error('获取工作空间详情失败，' + res.data.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error('获取工作空间详情失败，' + errorMessage)
   }
 }
 
-onMounted(async () => {
-  await fetchLoginUser() // 先获取登录用户信息
-  await fetchPermissions() // 然后获取权限
-  await fetchSpaceDetail() // 最后获取空间详情
-  fetchData() // 获取图片列表
-})
-
-// 当spaceId变化时重新获取数据
-watch(
-  () => props.id,
-  async (newSpaceId) => {
-    await fetchPermissions()
-    await fetchSpaceDetail()
-    fetchData()
-  }
-)
-
-// --------- 获取图片列表 --------
-
-// 定义数据
-const dataList = ref<API.PictureVO[]>([])
-const total = ref(0)
-const loading = ref(true)
-
-// 搜索条件
-const searchParams = ref<API.PictureQueryRequest>({
-  current: 1,
-  pageSize: 12,
-  sortField: 'createTime',
-  sortOrder: 'descend',
-})
-
-// 获取数据
 const fetchData = async () => {
   loading.value = true
-  // 转换搜索参数
-  const params = {
-    spaceId: props.id,
+  const res = await listPictureVoByPageUsingPost({
     ...searchParams.value,
-  }
-  const res = await listPictureVoByPageUsingPost(params)
+    spaceId: spaceId.value as any,
+  })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('获取素材失败，' + res.data.message)
   }
   loading.value = false
 }
 
-// 页面加载时获取数据，请求一次
-onMounted(() => {
-  fetchData()
-})
-
-// 分页参数
-const onPageChange = (page: number, pageSize: number) => {
-  searchParams.value.current = page
+const onPageChange = (current: number, pageSize: number) => {
+  searchParams.value.current = current
   searchParams.value.pageSize = pageSize
   fetchData()
 }
 
-// 搜索
 const onSearch = (newSearchParams: API.PictureQueryRequest) => {
-  console.log('new', newSearchParams)
-
   searchParams.value = {
     ...searchParams.value,
     ...newSearchParams,
     current: 1,
   }
-  console.log('searchparams', searchParams.value)
   fetchData()
 }
 
-// 按照颜色搜索
 const onColorChange = async (color: string) => {
   loading.value = true
   const res = await searchPictureByColorUsingPost({
     picColor: color,
-    spaceId: props.id,
+    spaceId: spaceId.value as any,
   })
   if (res.data.code === 0 && res.data.data) {
-    const data = res.data.data ?? []
-    dataList.value = data
-    total.value = data.length
+    dataList.value = res.data.data ?? []
+    total.value = dataList.value.length
   } else {
-    message.error('获取数据失败，' + res.data.message)
+    message.error('按颜色检索失败，' + res.data.message)
   }
   loading.value = false
 }
-
-// ---- 批量编辑图片 -----
-const batchEditPictureModalRef = ref()
-const imageSuperResolutionModalRef = ref()
-const currentSuperResolutionPicture = ref<API.PictureVO>()
-const srPollingTimerMap = new Map<string, ReturnType<typeof setInterval>>()
-
-const SR_TERMINAL_STATUS = new Set(['SUCCEEDED', 'FAILED', 'CANCELLED'])
 
 const stopSrTaskPolling = (taskId: string, closeMessage = true) => {
   const timer = srPollingTimerMap.get(taskId)
@@ -391,7 +334,7 @@ const startSrTaskPolling = (taskId: string) => {
       if (status === 'SUCCEEDED') {
         message.success({
           key: messageKey,
-          content: '超分任务已完成，正在刷新图片列表',
+          content: '超分任务已完成，正在刷新素材列表',
           duration: 3,
         })
         fetchData()
@@ -403,11 +346,12 @@ const startSrTaskPolling = (taskId: string) => {
         })
       }
       stopSrTaskPolling(taskId, false)
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (pollingCount >= maxPollingCount) {
+        const errorMessage = error instanceof Error ? error.message : '未知错误'
         message.error({
           key: messageKey,
-          content: `超分任务轮询异常（${taskId}）：${error?.message || '未知错误'}`,
+          content: `超分任务轮询异常（${taskId}）：${errorMessage}`,
           duration: 4,
         })
         stopSrTaskPolling(taskId, false)
@@ -420,23 +364,17 @@ const startSrTaskPolling = (taskId: string) => {
   srPollingTimerMap.set(taskId, timer)
 }
 
-// 批量编辑图片成功
 const onBatchEditPictureSuccess = () => {
   fetchData()
 }
 
-// 打开批量编辑图片弹窗
 const doBatchEdit = () => {
-  if (batchEditPictureModalRef.value) {
-    batchEditPictureModalRef.value.openModal()
-  }
+  batchEditPictureModalRef.value?.openModal()
 }
 
 const openSuperResolutionModal = (picture: API.PictureVO) => {
   currentSuperResolutionPicture.value = picture
-  if (imageSuperResolutionModalRef.value) {
-    imageSuperResolutionModalRef.value.openModal()
-  }
+  imageSuperResolutionModalRef.value?.openModal()
 }
 
 const onSuperResolutionTaskCreated = (taskId: string) => {
@@ -447,22 +385,60 @@ const goToSrResultPage = () => {
   router.push(`/space/${props.id}/sr_result`)
 }
 
+onMounted(async () => {
+  await fetchLoginUser()
+  await fetchPermissions()
+  await fetchSpaceDetail()
+  fetchData()
+})
+
 onBeforeUnmount(() => {
   Array.from(srPollingTimerMap.keys()).forEach((taskId) => stopSrTaskPolling(taskId))
 })
 
-// 空间 id 改变时，必须重新获取数据
 watch(
   () => props.id,
-  (newSpaceId) => {
-    fetchSpaceDetail()
+  async () => {
+    await fetchPermissions()
+    await fetchSpaceDetail()
     fetchData()
   },
 )
 </script>
 
-<style scoped>
-#spaceDetailPage {
-  margin-bottom: 16px;
+<style scoped lang="less">
+.panel-card {
+  padding: 24px;
+}
+
+.panel-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.metric-label {
+  font-size: 22px;
+}
+
+.color-filter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.color-filter__label {
+  color: #64748b;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .panel-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 </style>

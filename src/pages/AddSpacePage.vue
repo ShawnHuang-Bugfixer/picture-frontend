@@ -1,111 +1,113 @@
 <template>
-  <div id="addSpacePage">
-    <h2 style="margin-bottom: 16px">
-      {{ route.query?.id ? '修改' : '创建' }} {{ SPACE_TYPE_MAP[spaceType] }}
-    </h2>
-    <!-- 空间信息表单 -->
-    <a-form name="spaceForm" layout="vertical" :model="spaceForm" @finish="handleSubmit">
-      <a-form-item name="spaceName" label="空间名称">
-        <a-input v-model:value="spaceForm.spaceName" placeholder="请输入空间" allow-clear />
-      </a-form-item>
-      <a-form-item name="spaceLevel" label="空间级别">
-        <a-select
-          v-model:value="spaceForm.spaceLevel"
-          style="min-width: 180px"
-          placeholder="请选择空间级别"
-          :options="SPACE_LEVEL_OPTIONS"
-          allow-clear
-        />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit" :loading="loading" style="width: 100%">
-          提交
-        </a-button>
-      </a-form-item>
-    </a-form>
-    <!-- 空间级别介绍 -->
-    <a-card title="空间级别介绍">
-      <a-typography-paragraph>
-        * 目前仅支持开通普通版
-      </a-typography-paragraph>
-      <a-typography-paragraph v-for="spaceLevel in spaceLevelList">
-        {{ spaceLevel.text }}：大小 {{ formatSize(spaceLevel.maxSize) }}，数量
-        {{ spaceLevel.maxCount }}
-      </a-typography-paragraph>
-    </a-card>
+  <div id="addSpacePage" class="app-page">
+    <section class="app-page__hero">
+      <div>
+        <h2 class="app-page__title">{{ isEditMode ? '编辑' : '创建' }}{{ SPACE_TYPE_MAP[spaceType] }}</h2>
+        <p class="app-page__subtitle">为个人处理流或团队协作流创建独立工作空间，并选择容量规格。</p>
+      </div>
+    </section>
+
+    <div class="space-grid">
+      <section class="app-form-card">
+        <a-form name="spaceForm" layout="vertical" :model="spaceForm" @finish="handleSubmit">
+          <a-form-item name="spaceName" label="空间名称">
+            <a-input v-model:value="spaceForm.spaceName" placeholder="请输入空间名称" allow-clear />
+          </a-form-item>
+          <a-form-item name="spaceLevel" label="空间规格">
+            <a-select
+              v-model:value="spaceForm.spaceLevel"
+              style="width: 100%"
+              placeholder="请选择空间规格"
+              :options="SPACE_LEVEL_OPTIONS"
+              allow-clear
+            />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" html-type="submit" :loading="loading" style="width: 100%">
+              提交
+            </a-button>
+          </a-form-item>
+        </a-form>
+      </section>
+
+      <section class="app-card app-card--soft level-card">
+        <h3 class="app-section-title">空间规格说明</h3>
+        <p class="app-section-desc">可先使用标准版空间，后续再进入套餐升级页扩容。</p>
+        <div class="level-list">
+          <div v-for="spaceLevel in spaceLevelList" :key="spaceLevel.value" class="level-item">
+            <strong>{{ spaceLevel.text }}</strong>
+            <span>容量 {{ formatSize(spaceLevel.maxSize) }}</span>
+            <span>数量 {{ spaceLevel.maxCount }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
+import { useRoute, useRouter } from 'vue-router'
 import {
   addSpaceUsingPost,
   getSpaceVoByIdUsingGet,
   listSpaceLevelUsingGet,
   updateSpaceUsingPost,
 } from '@/api/spaceController.ts'
-import { useRoute, useRouter } from 'vue-router'
-import {SPACE_LEVEL_MAP, SPACE_LEVEL_OPTIONS, SPACE_TYPE_ENUM, SPACE_TYPE_MAP} from '@/constants/space.ts'
-import { formatSize } from '../utils'
+import { SPACE_LEVEL_OPTIONS, SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
+import { formatSize } from '@/utils'
 
-const space = ref<API.SpaceVO>()
-const spaceForm = reactive<API.SpaceAddRequest | API.SpaceEditRequest>({})
-const loading = ref(false)
+type SpaceFormState = {
+  spaceName?: string
+  spaceLevel?: number
+}
 
 const route = useRoute()
-// 空间类别，默认为私有空间
-const spaceType = computed(() => {
-  if (route.query?.type) {
-    return Number(route.query.type)
-  } else {
-    return SPACE_TYPE_ENUM.PRIVATE
-  }
-})
-
+const router = useRouter()
+const space = ref<API.SpaceVO>()
+const spaceForm = reactive<SpaceFormState>({})
+const loading = ref(false)
 const spaceLevelList = ref<API.SpaceLevel[]>([])
 
-// 获取空间级别
+const routeId = computed(() => {
+  const rawId = route.query?.id
+  return rawId ? Number(rawId) : undefined
+})
+
+const isEditMode = computed(() => Boolean(routeId.value))
+const spaceType = computed(() => {
+  const rawType = route.query?.type
+  return rawType ? Number(rawType) : SPACE_TYPE_ENUM.PRIVATE
+})
+
 const fetchSpaceLevelList = async () => {
   const res = await listSpaceLevelUsingGet()
   if (res.data.code === 0 && res.data.data) {
     spaceLevelList.value = res.data.data
-  } else {
-    message.error('获取空间级别失败，' + res.data.message)
+    return
   }
+  message.error('获取空间规格失败，' + res.data.message)
 }
 
-onMounted(() => {
-  fetchSpaceLevelList()
-})
-
-const router = useRouter()
-
-/**
- * 提交表单
- * @param values
- */
-const handleSubmit = async (values: any) => {
-  const spaceId = space.value?.id
+const handleSubmit = async () => {
   loading.value = true
   let res
-  if (spaceId) {
-    // 更新
+  if (space.value?.id) {
     res = await updateSpaceUsingPost({
-      id: spaceId,
-      ...spaceForm,
+      id: space.value.id,
+      spaceName: spaceForm.spaceName,
     })
   } else {
-    // 创建
     res = await addSpaceUsingPost({
-      ...spaceForm,
+      spaceName: spaceForm.spaceName,
+      spaceLevel: spaceForm.spaceLevel,
       spaceType: spaceType.value,
     })
   }
-  // 操作成功
+
   if (res.data.code === 0 && res.data.data) {
     message.success('操作成功')
-    // 跳转到空间详情页
     router.push({
       path: `/space/${res.data.data}`,
     })
@@ -115,32 +117,57 @@ const handleSubmit = async (values: any) => {
   loading.value = false
 }
 
-// 获取老数据
 const getOldSpace = async () => {
-  // 获取到 id
-  const id = route.query?.id
-  if (id) {
-    const res = await getSpaceVoByIdUsingGet({
-      id,
-    })
-    if (res.data.code === 0 && res.data.data) {
-      const data = res.data.data
-      space.value = data
-      // 填充表单
-      spaceForm.spaceName = data.spaceName
-      spaceForm.spaceLevel = data.spaceLevel
-    }
+  if (!routeId.value) return
+
+  const res = await getSpaceVoByIdUsingGet({
+    id: routeId.value,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    const data = res.data.data
+    space.value = data
+    spaceForm.spaceName = data.spaceName
+    spaceForm.spaceLevel = data.spaceLevel
   }
 }
 
 onMounted(() => {
+  fetchSpaceLevelList()
   getOldSpace()
 })
 </script>
 
-<style scoped>
-#addSpacePage {
-  max-width: 720px;
-  margin: 0 auto;
+<style scoped lang="less">
+.space-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+}
+
+.level-card {
+  padding: 24px;
+}
+
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.level-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+@media (max-width: 960px) {
+  .space-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

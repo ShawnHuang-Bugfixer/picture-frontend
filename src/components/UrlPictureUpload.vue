@@ -1,21 +1,17 @@
 <template>
   <div class="url-picture-upload">
-    <a-input-group compact>
-      <a-input
-        v-model:value="fileUrl"
-        style="width: calc(100% - 120px)"
-        placeholder="请输入图片地址"
-      />
-      <a-button type="primary" style="width: 120px" :loading="loading" @click="handleUpload">
-        提交
-      </a-button>
-    </a-input-group>
-    <div class="img-wrapper">
-      <img v-if="picture?.url" :src="picture?.url" alt="avatar" />
+    <div class="url-shell">
+      <a-input v-model:value="fileUrl" placeholder="输入图片 URL，提交到当前工作空间或案例流中" />
+      <a-button type="primary" :loading="loading" @click="handleUpload">提交 URL</a-button>
+    </div>
+    <div class="preview-card">
+      <img v-if="picture?.url" :src="picture.url" alt="preview" />
+      <div v-else class="preview-empty">提交成功后，会在这里显示当前素材预览。</div>
     </div>
   </div>
 </template>
-<script lang="ts" setup>
+
+<script setup lang="ts">
 import { ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureByUrlUsingPost } from '@/api/pictureController.ts'
@@ -28,47 +24,69 @@ interface Props {
 
 const props = defineProps<Props>()
 const fileUrl = ref<string>()
-const loading = ref<boolean>(false)
+const loading = ref(false)
 
-/**
- * 上传图片
- * @param file
- */
 const handleUpload = async () => {
+  if (!fileUrl.value) {
+    message.error('请输入图片 URL')
+    return
+  }
+
   loading.value = true
   try {
     const params: API.PictureUploadRequest = { fileUrl: fileUrl.value }
-    params.spaceId = props.spaceId;
-    if (props.picture) {
+    params.spaceId = props.spaceId
+    if (props.picture?.id) {
       params.id = props.picture.id
     }
     const res = await uploadPictureByUrlUsingPost(params)
     if (res.data.code === 0 && res.data.data) {
-      message.success('图片上传成功')
-      // 将上传成功的图片信息传递给父组件
+      message.success('素材上传成功')
       props.onSuccess?.(res.data.data)
-    } else {
-      message.error('图片上传失败，' + res.data.message)
+      return
     }
-  } catch (error) {
-    console.error('图片上传失败', error)
-    message.error('图片上传失败，' + error.message)
+    message.error('素材上传失败，' + res.data.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error('素材上传失败，' + errorMessage)
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 }
 </script>
-<style scoped>
+
+<style scoped lang="less">
+@import '@/styles/variables.less';
+
 .url-picture-upload {
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.url-picture-upload img {
+.url-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.preview-card {
+  display: grid;
+  place-items: center;
+  min-height: 280px;
+  padding: 18px;
+  border: 1px dashed @border-strong;
+  border-radius: @border-radius-xl;
+  background: @card-bg-soft;
+}
+
+.preview-card img {
   max-width: 100%;
-  max-height: 480px;
+  max-height: 460px;
+  border-radius: @border-radius-lg;
 }
 
-.url-picture-upload .img-wrapper {
-  text-align: center;
-  margin-top: 16px;
+.preview-empty {
+  color: @text-secondary;
 }
 </style>

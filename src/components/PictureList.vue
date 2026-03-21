@@ -32,7 +32,7 @@
                 <template #description>
                   <a-flex>
                     <a-tag color="green">
-                      {{ slotProps.item.category ?? '榛樿' }}
+                      {{ slotProps.item.category ?? '默认' }}
                     </a-tag>
                     <a-tag v-for="tag in slotProps.item.tags" :key="tag">
                       {{ tag }}
@@ -49,7 +49,7 @@
                 <EditOutlined v-if="canEdit" @click.stop="doEdit(slotProps.item, $event)" />
                 <DeleteOutlined v-if="canDelete" @click.stop="doDelete(slotProps.item, $event)" />
                 <a v-if="showSuperResolution && onSuperResolution" style="color:#1677ff;" @click.stop="doSuperResolution(slotProps.item, $event)">AI超分</a>
-                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">鐢宠瘔</a>
+                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">申诉</a>
               </template>
             </a-card>
           </a-list-item>
@@ -171,7 +171,7 @@ const fetchPictures = async (reset = false) => {
     }
   } catch (error) {
     loading.value = false
-    message.error('鍔犺浇鍥剧墖澶辫触')
+    message.error('加载素材失败')
   }
 }
 
@@ -198,8 +198,7 @@ const setupObserver = () => {
       (entries) => {
         if (!props.infinite || finished.value || loading.value) return
 
-        // 鍙鐞嗙涓€涓厓绱?
-        const entry = entries[0]
+  const entry = entries[0]
         if (entry.isIntersecting) {
           // 澧炲姞闃叉姈妫€娴?
           const now = Date.now()
@@ -286,11 +285,11 @@ const doDelete = async (picture: API.PictureVO, e: Event) => {
   if (!id) return
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
-    message.success('鍒犻櫎鎴愬姛')
+    message.success('删除成功')
     props.onReload?.()
     if (props.autoFetch) fetchPictures(true)
   } else {
-    message.error('鍒犻櫎澶辫触')
+    message.error('删除失败')
   }
 }
 
@@ -323,7 +322,7 @@ const copyId = (id: string | number) => {
     navigator.clipboard.writeText(text).then(() => {
       message.success('已复制')
     }, () => {
-      message.error('澶嶅埗澶辫触')
+      message.error('复制失败')
     })
   } else {
     // 鍏煎涓嶆敮鎸?clipboard 鐨勭幆澧?
@@ -335,7 +334,7 @@ const copyId = (id: string | number) => {
       document.execCommand('copy')
       message.success('已复制')
     } catch (e) {
-      message.error('澶嶅埗澶辫触')
+      message.error('复制失败')
     }
     document.body.removeChild(input)
   }

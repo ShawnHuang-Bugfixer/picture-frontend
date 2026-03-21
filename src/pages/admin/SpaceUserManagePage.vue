@@ -1,164 +1,137 @@
 <template>
-  <div id="spaceManagePage">
-    <a-flex justify="space-between">
-      <h2>空间成员管理</h2>
-      <a-space>
-        <a-button type="primary" href="/add_space" target="_blank">+ 创建空间</a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryPublic=1" target="_blank"
-          >分析公共图库
-        </a-button>
-        <a-button type="primary" ghost href="/space_analyze?queryAll=1" target="_blank"
-          >分析全部空间
-        </a-button>
-      </a-space>
-    </a-flex>
-    <div style="margin-bottom: 16px" />
-    <!-- 添加成员表单 -->
-    <a-form layout="inline" :model="formData" @finish="handleSubmit">
-      <a-form-item label="用户 id" name="userId">
-        <a-input v-model:value="formData.userId" placeholder="请输入用户 id" allow-clear />
-      </a-form-item>
-      <a-form-item>
-        <a-button type="primary" html-type="submit">添加用户</a-button>
-      </a-form-item>
-    </a-form>
-    <div style="margin-bottom: 16px" />
-    <!-- 表格 -->
-    <a-table :columns="columns" :data-source="dataList">
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.dataIndex === 'userInfo'">
-          <a-space>
-            <a-avatar :src="record.user?.userAvatar" />
-            {{ record.user?.userName }}
-          </a-space>
+  <div id="spaceManagePage" class="app-page">
+    <section class="app-page__hero">
+      <div>
+        <h2 class="app-page__title">协作成员管理</h2>
+        <p class="app-page__subtitle">为当前团队协作空间分配成员、调整角色，并移除不再参与的成员。</p>
+      </div>
+      <div class="app-page__actions">
+        <a-button href="/space_analyze?queryPublic=1" target="_blank">案例展厅分析</a-button>
+        <a-button href="/space_analyze?queryAll=1" target="_blank">全局空间分析</a-button>
+      </div>
+    </section>
+
+    <section class="app-filter-bar">
+      <a-form layout="inline" :model="formData" @finish="handleSubmit">
+        <a-form-item label="用户 ID" name="userId">
+          <a-input-number v-model:value="formData.userId" placeholder="输入用户 ID" style="width: 180px" />
+        </a-form-item>
+        <a-form-item>
+          <a-button type="primary" html-type="submit">添加成员</a-button>
+        </a-form-item>
+      </a-form>
+    </section>
+
+    <section class="app-table-card">
+      <a-table :columns="columns" :data-source="dataList" :pagination="false">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.dataIndex === 'userInfo'">
+            <a-space>
+              <a-avatar :src="record.user?.userAvatar" />
+              {{ record.user?.userName }}
+            </a-space>
+          </template>
+          <template v-else-if="column.dataIndex === 'spaceRole'">
+            <a-select
+              v-model:value="record.spaceRole"
+              :options="SPACE_ROLE_OPTIONS"
+              @change="handleRoleChange($event, record)"
+            />
+          </template>
+          <template v-else-if="column.dataIndex === 'createTime'">
+            {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
+          </template>
+          <template v-else-if="column.key === 'action'">
+            <a-button type="link" danger @click="doDelete(record.id)">移除</a-button>
+          </template>
         </template>
-        <template v-if="column.dataIndex === 'spaceRole'">
-          <a-select
-            v-model:value="record.spaceRole"
-            :options="SPACE_ROLE_OPTIONS"
-            @change="(value) => editSpaceRole(value, record)"
-          />
-        </template>
-        <template v-else-if="column.dataIndex === 'createTime'">
-          {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
-        </template>
-        <template v-else-if="column.key === 'action'">
-          <a-space wrap>
-            <a-button type="link" danger @click="doDelete(record.id)">删除</a-button>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
+      </a-table>
+    </section>
   </div>
 </template>
-<script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+
+<script setup lang="ts">
 import { message } from 'ant-design-vue'
-import { SPACE_ROLE_OPTIONS } from '../../constants/space.ts'
+import dayjs from 'dayjs'
+import { onMounted, reactive, ref } from 'vue'
 import {
   addSpaceUserUsingPost,
   deleteSpaceUserUsingPost,
   editSpaceUserUsingPost,
   listSpaceUserUsingPost,
 } from '@/api/spaceUserController.ts'
-import dayjs from 'dayjs'
+import { SPACE_ROLE_OPTIONS } from '@/constants/space.ts'
 
 interface Props {
-  id: string
+  id: string | number
 }
 
 const props = defineProps<Props>()
 
 const columns = [
-  {
-    title: '用户',
-    dataIndex: 'userInfo',
-  },
-  {
-    title: '角色',
-    dataIndex: 'spaceRole',
-  },
-  {
-    title: '创建时间',
-    dataIndex: 'createTime',
-  },
-  {
-    title: '操作',
-    key: 'action',
-  },
+  { title: '成员', dataIndex: 'userInfo' },
+  { title: '角色', dataIndex: 'spaceRole' },
+  { title: '加入时间', dataIndex: 'createTime' },
+  { title: '操作', key: 'action' },
 ]
 
-// 定义数据
 const dataList = ref<API.SpaceUserVO[]>([])
+const formData = reactive<API.SpaceUserAddRequest>({})
 
-// 获取数据
 const fetchData = async () => {
-  const spaceId = props.id
-  if (!spaceId) {
-    return
-  }
   const res = await listSpaceUserUsingPost({
-    spaceId,
+    spaceId: Number(props.id),
   })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data ?? []
-  } else {
-    message.error('获取数据失败，' + res.data.message)
-  }
-}
-
-// 页面加载时获取数据，请求一次
-onMounted(() => {
-  fetchData()
-})
-
-// 添加成员表单
-const formData = reactive<API.SpaceUserAddRequest>({})
-
-// 创建成员
-const handleSubmit = async () => {
-  const spaceId = props.id
-  if (!spaceId) {
     return
   }
+  message.error('获取成员数据失败，' + res.data.message)
+}
+
+const handleSubmit = async () => {
   const res = await addSpaceUserUsingPost({
-    spaceId,
+    spaceId: Number(props.id),
     ...formData,
   })
   if (res.data.code === 0) {
     message.success('添加成功')
-    // 刷新数据
     fetchData()
-  } else {
-    message.error('添加失败，' + res.data.message)
+    return
   }
+  message.error('添加失败，' + res.data.message)
 }
 
-// 编辑成员角色
-const editSpaceRole = async (value, record) => {
+const handleRoleChange = (value: string | number, record: API.SpaceUserVO) => {
+  editSpaceRole(String(value), record)
+}
+
+const editSpaceRole = async (value: string, record: API.SpaceUserVO) => {
   const res = await editSpaceUserUsingPost({
-    id: record.id,
+    id: Number(record.id),
     spaceRole: value,
   })
   if (res.data.code === 0) {
-    message.success('修改成功')
+    message.success('角色已更新')
   } else {
-    message.error('修改失败，' + res.data.message)
+    message.error('角色更新失败，' + res.data.message)
   }
 }
 
-// 删除数据
-const doDelete = async (id: string) => {
+const doDelete = async (id: string | number) => {
   if (!id) {
     return
   }
-  const res = await deleteSpaceUserUsingPost({ id })
+  const res = await deleteSpaceUserUsingPost({ id: Number(id) })
   if (res.data.code === 0) {
-    message.success('删除成功')
-    // 刷新数据
+    message.success('成员已移除')
     fetchData()
-  } else {
-    message.error('删除失败')
+    return
   }
+  message.error('移除失败')
 }
+
+onMounted(() => {
+  fetchData()
+})
 </script>

@@ -1,0 +1,239 @@
+@import '@/styles/variables.less';
+
+:root {
+  color: @text-color;
+  background: @background-color;
+  font-family: @font-family;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at top, rgba(93, 160, 255, 0.09), transparent 28%),
+    linear-gradient(180deg, #f7f8fc 0%, #f3f5f8 100%);
+  color: @text-color;
+  font-family: @font-family;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.app-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.app-page__hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 32px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-xl;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: @shadow-lg;
+  backdrop-filter: blur(12px);
+}
+
+.app-page__title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.app-page__subtitle {
+  margin: 8px 0 0;
+  max-width: 680px;
+  color: @text-secondary;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.app-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.app-card {
+  border: 1px solid @border-color;
+  border-radius: @border-radius-lg;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: @shadow-md;
+}
+
+.app-card--soft {
+  background: @card-bg-soft;
+}
+
+.app-section-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.app-section-desc {
+  margin: 6px 0 0;
+  color: @text-secondary;
+  font-size: 14px;
+}
+
+.app-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 20px 24px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-lg;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: @shadow-sm;
+}
+
+.app-form-card {
+  padding: 28px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-xl;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: @shadow-lg;
+}
+
+.app-auth-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 440px);
+  gap: 28px;
+  align-items: stretch;
+  min-height: calc(100vh - 180px);
+}
+
+.app-auth-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-xl;
+  background:
+    radial-gradient(circle at top left, rgba(38, 132, 255, 0.14), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(4, 120, 87, 0.14), transparent 26%),
+    rgba(255, 255, 255, 0.78);
+  box-shadow: @shadow-xl;
+  backdrop-filter: blur(16px);
+}
+
+.app-auth-form {
+  padding: 36px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-xl;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: @shadow-lg;
+}
+
+.app-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.app-metric {
+  padding: 20px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-lg;
+  background: @card-bg;
+}
+
+.app-metric__label {
+  color: @text-secondary;
+  font-size: 13px;
+}
+
+.app-metric__value {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.app-table-card {
+  padding: 16px;
+  border: 1px solid @border-color;
+  border-radius: @border-radius-xl;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: @shadow-lg;
+}
+
+.app-empty-copy {
+  color: @text-secondary;
+}
+
+.ant-btn {
+  height: @button-height;
+  border-radius: @border-radius-pill;
+  font-weight: 500;
+}
+
+.ant-btn-primary {
+  background: @btn-bg;
+  border-color: @btn-bg;
+  box-shadow: none;
+}
+
+.ant-input,
+.ant-input-password,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-input-number,
+.ant-picker {
+  min-height: @input-height;
+  border-radius: @border-radius-md !important;
+}
+
+.ant-card {
+  border-radius: @border-radius-lg;
+}
+
+.ant-table-wrapper .ant-table {
+  border-radius: @border-radius-lg;
+}
+
+.ant-tabs-nav::before {
+  border-bottom-color: transparent !important;
+}
+
+.ant-tag {
+  border-radius: @border-radius-pill;
+}
+
+@media (max-width: 960px) {
+  .app-auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .app-auth-panel {
+    min-height: 260px;
+  }
+
+  .app-page__hero {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .app-page__actions {
+    justify-content: flex-start;
+  }
+}

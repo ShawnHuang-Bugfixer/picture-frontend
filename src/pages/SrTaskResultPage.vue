@@ -92,7 +92,7 @@
                   </div>
                   <a-space style="margin-top: 8px">
                     <a :href="item.outputUrl" target="_blank">查看原文件</a>
-                    <a :href="item.outputUrl" download>下载</a>
+                    <a @click.prevent="doDownload(item)">下载</a>
                   </a-space>
                 </div>
               </a-card>
@@ -127,7 +127,7 @@ import {
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
 import { getSrBizTypeText, isVideoMedia } from '@/constants/srTask.ts'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
-import { formatSize } from '@/utils'
+import { downloadImage, formatSize } from '@/utils'
 
 interface Props {
   id: string | number
@@ -288,6 +288,21 @@ const goToGalleryUpload = () => {
 
 const backToSpace = () => {
   router.push(`/space/${props.id}`)
+}
+
+const doDownload = async (item: SrTaskResultVO) => {
+  if (!item.outputUrl) {
+    return
+  }
+  try {
+    const fileName =
+      item.outputFileKey?.split('/').filter(Boolean).pop() ||
+      `${item.taskNo || 'sr-result'}.${item.outputFormat || 'png'}`
+    await downloadImage(item.outputUrl, fileName)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error(`下载结果失败，${errorMessage}`)
+  }
 }
 
 onMounted(async () => {

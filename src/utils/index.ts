@@ -20,7 +20,48 @@ export function downloadImage(url?: string, fileName?: string) {
   if (!url) {
     return
   }
-  saveAs(url, fileName)
+  return fetch(url, {
+    credentials: 'include',
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`下载失败: ${response.status}`)
+      }
+      const blob = await response.blob()
+      const resolvedFileName =
+        fileName || getFileNameFromHeader(response.headers.get('content-disposition')) || getFileNameFromUrl(url)
+      saveAs(blob, resolvedFileName)
+    })
+    .catch((error) => {
+      // Fallback to the original URL-based behavior when blob download is blocked.
+      saveAs(url, fileName)
+      throw error
+    })
+}
+
+function getFileNameFromHeader(contentDisposition?: string | null) {
+  if (!contentDisposition) {
+    return undefined
+  }
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1])
+  }
+  const asciiMatch = contentDisposition.match(/filename="?([^";]+)"?/i)
+  if (asciiMatch?.[1]) {
+    return asciiMatch[1]
+  }
+  return undefined
+}
+
+function getFileNameFromUrl(url: string) {
+  try {
+    const urlObject = new URL(url, window.location.href)
+    const fileName = urlObject.pathname.split('/').filter(Boolean).pop()
+    return fileName || 'download'
+  } catch {
+    return 'download'
+  }
 }
 
 /**

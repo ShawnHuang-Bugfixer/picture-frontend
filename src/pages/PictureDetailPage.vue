@@ -193,11 +193,19 @@ const doDelete = async () => {
   message.error('删除失败')
 }
 
-const doDownload = () => {
+const doDownload = async () => {
   if (!picture.value.url) {
     return
   }
-  downloadImage(picture.value.url)
+  try {
+    const fileName = picture.value.name
+      ? `${picture.value.name}.${picture.value.picFormat || 'jpg'}`
+      : undefined
+    await downloadImage(picture.value.url, fileName)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : '请稍后重试'
+    message.error(`下载素材失败，${errorMessage}`)
+  }
 }
 
 const doShare = () => {

@@ -2,27 +2,30 @@
   <div id="addPicturePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">{{ pictureId ? '编辑素材' : '发起超分任务' }}</h2>
+        <h2 class="app-page__title">{{ pageTitle }}</h2>
         <p class="app-page__subtitle">
-          在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图和超分任务提交，减少在多个页面间来回切换。
+          {{ pageSubtitle }}
         </p>
       </div>
-      <div v-if="resolvedSpaceId" class="app-page__actions">
-        <a-button :href="`/space/${resolvedSpaceId}`" target="_blank">返回工作空间</a-button>
+      <div class="app-page__actions">
+        <a-button v-if="showBackToResultCenter" @click="backToResultCenter">返回结果中心</a-button>
+        <a-button v-else-if="resolvedSpaceId" :href="`/space/${resolvedSpaceId}`" target="_blank">
+          返回工作空间
+        </a-button>
       </div>
     </section>
 
     <div class="task-grid">
       <section class="app-card upload-card">
         <div class="card-head">
-          <h3 class="app-section-title">任务素材</h3>
-          <p class="app-section-desc">支持文件上传和 URL 导入，图片与视频会统一进入当前任务流。</p>
+          <h3 class="app-section-title">{{ uploadCardTitle }}</h3>
+          <p class="app-section-desc">{{ uploadCardDesc }}</p>
         </div>
         <a-tabs v-model:activeKey="uploadType">
           <a-tab-pane key="file" tab="文件上传">
             <PictureUpload :picture="picture" :spaceId="resolvedSpaceId" :onSuccess="onSuccess" />
           </a-tab-pane>
-          <a-tab-pane key="url" tab="URL 导入" force-render>
+          <a-tab-pane v-if="!isGalleryUploadMode" key="url" tab="URL 导入" force-render>
             <UrlPictureUpload
               :picture="picture"
               :spaceId="resolvedSpaceId"
@@ -34,8 +37,8 @@
 
       <section class="app-card info-card">
         <div class="card-head">
-          <h3 class="app-section-title">任务信息</h3>
-          <p class="app-section-desc">补齐名称、简介、分类和标签，便于后续检索、筛选和结果沉淀。</p>
+          <h3 class="app-section-title">{{ infoCardTitle }}</h3>
+          <p class="app-section-desc">{{ infoCardDesc }}</p>
         </div>
         <a-form name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
           <a-form-item name="name" label="名称">
@@ -80,10 +83,12 @@
       </section>
     </div>
 
-    <section v-if="picture?.id" class="app-card tool-card">
+    <section v-if="picture?.id && !isGalleryUploadMode" class="app-card tool-card">
       <div class="card-head">
         <h3 class="app-section-title">后续处理</h3>
-        <p class="app-section-desc">上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。</p>
+        <p class="app-section-desc">
+          上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。
+        </p>
       </div>
       <div class="tool-actions">
         <a-button @click="doEditPicture">裁剪素材</a-button>
@@ -145,12 +150,7 @@
           />
         </a-form-item>
         <a-form-item name="tags" label="标签">
-          <a-select
-            v-model:value="pictureForm.tags"
-            mode="tags"
-            :options="tagOptions"
-            allow-clear
-          />
+          <a-select v-model:value="pictureForm.tags" mode="tags" :options="tagOptions" allow-clear />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
@@ -206,6 +206,39 @@ const normalizeQueryValue = (value: unknown) => {
 
 const resolvedSpaceId = computed(() => normalizeQueryValue(route.query?.spaceId))
 const pictureId = computed(() => normalizeQueryValue(route.query?.id))
+const sourceSpaceId = computed(() => normalizeQueryValue(route.query?.sourceSpaceId))
+const isGalleryUploadMode = computed(() => normalizeQueryValue(route.query?.galleryUpload) === '1')
+const showBackToResultCenter = computed(() => isGalleryUploadMode.value && Boolean(sourceSpaceId.value))
+
+const pageTitle = computed(() => {
+  if (isGalleryUploadMode.value) {
+    return '上传至展厅'
+  }
+  return pictureId.value ? '编辑素材' : '发起超分任务'
+})
+
+const pageSubtitle = computed(() => {
+  if (isGalleryUploadMode.value) {
+    return '复用现有素材上传页，选择本地图片上传到展厅，并完善名称、分类和标签信息。'
+  }
+  return '在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图和超分任务提交，减少在多个页面间来回切换。'
+})
+
+const uploadCardTitle = computed(() => (isGalleryUploadMode.value ? '展厅素材' : '任务素材'))
+const uploadCardDesc = computed(() => {
+  if (isGalleryUploadMode.value) {
+    return '仅支持本地文件上传，上传后素材将进入展厅内容链路。'
+  }
+  return '支持文件上传和 URL 导入，图片与视频会统一进入当前任务流。'
+})
+
+const infoCardTitle = computed(() => (isGalleryUploadMode.value ? '展厅信息' : '任务信息'))
+const infoCardDesc = computed(() => {
+  if (isGalleryUploadMode.value) {
+    return '补齐名称、简介、分类和标签，便于后续在展厅中检索和展示。'
+  }
+  return '补齐名称、简介、分类和标签，便于后续检索、筛选和结果沉淀。'
+})
 
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
@@ -317,11 +350,21 @@ const handleSubmitModal = async () => {
   showEditInfoModal.value = false
 }
 
+const backToResultCenter = () => {
+  if (!sourceSpaceId.value) {
+    return
+  }
+  router.push(`/space/${sourceSpaceId.value}/sr_result`)
+}
+
 watchEffect(() => {
   fetchSpace()
 })
 
 onMounted(() => {
+  if (isGalleryUploadMode.value) {
+    uploadType.value = 'file'
+  }
   getTagCategoryOptions()
   getOldPicture()
 })

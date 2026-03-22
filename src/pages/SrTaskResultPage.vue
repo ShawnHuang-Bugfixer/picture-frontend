@@ -9,6 +9,7 @@
       </div>
       <div class="app-page__actions">
         <a-tag>{{ spaceTypeText }}</a-tag>
+        <a-button type="primary" @click="goToGalleryUpload">上传至展厅</a-button>
         <a-button @click="fetchData">刷新结果</a-button>
         <a-button @click="backToSpace">返回工作空间</a-button>
       </div>
@@ -84,8 +85,7 @@
                   <div><span class="label">输出 Key：</span>{{ item.outputFileKey || '-' }}</div>
                   <div><span class="label">Trace ID：</span>{{ item.traceId || '-' }}</div>
                   <div>
-                    <span class="label">完成时间：</span
-                    >{{ item.updateTime || item.createTime || '-' }}
+                    <span class="label">完成时间：</span>{{ item.updateTime || item.createTime || '-' }}
                   </div>
                   <div v-if="isTeamSpace">
                     <span class="label">创建者：</span>{{ item.userId ?? '-' }}
@@ -280,6 +280,10 @@ const resetSearch = () => {
   searchParams.modelName = undefined
   searchParams.bizType = undefined
   fetchData()
+}
+
+const goToGalleryUpload = () => {
+  router.push(`/add_picture?galleryUpload=1&uploadType=file&from=sr_result&sourceSpaceId=${props.id}`)
 }
 
 const backToSpace = () => {

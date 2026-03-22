@@ -69,10 +69,15 @@ const space = ref<API.SpaceVO>()
 const spaceForm = reactive<SpaceFormState>({})
 const loading = ref(false)
 const spaceLevelList = ref<API.SpaceLevel[]>([])
+const normalizeQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+  return value ?? undefined
+}
 
 const routeId = computed(() => {
-  const rawId = route.query?.id
-  return rawId ? Number(rawId) : undefined
+  return normalizeQueryValue(route.query?.id)
 })
 
 const isEditMode = computed(() => Boolean(routeId.value))
@@ -121,7 +126,7 @@ const getOldSpace = async () => {
   if (!routeId.value) return
 
   const res = await getSpaceVoByIdUsingGet({
-    id: routeId.value,
+    id: routeId.value as any,
   })
   if (res.data.code === 0 && res.data.data) {
     const data = res.data.data

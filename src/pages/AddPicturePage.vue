@@ -164,15 +164,19 @@ const space = ref<API.SpaceVO>()
 const showEditInfoModal = ref(false)
 const imageCropperRef = ref()
 const imageOutPaintingRef = ref()
+const normalizeQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+  return value ?? undefined
+}
 
 const resolvedSpaceId = computed(() => {
-  const rawId = route.query?.spaceId
-  return rawId ? Number(rawId) : undefined
+  return normalizeQueryValue(route.query?.spaceId)
 })
 
 const pictureId = computed(() => {
-  const rawId = route.query?.id
-  return rawId ? Number(rawId) : undefined
+  return normalizeQueryValue(route.query?.id)
 })
 
 const onSuccess = (newPicture: API.PictureVO) => {
@@ -220,7 +224,7 @@ const getOldPicture = async () => {
   if (!pictureId.value) return
 
   const res = await getPictureVoByIdUsingGet({
-    id: pictureId.value,
+    id: pictureId.value as any,
   })
   if (res.data.code === 0 && res.data.data) {
     const data = res.data.data
@@ -252,7 +256,7 @@ const fetchSpace = async () => {
   if (!resolvedSpaceId.value) return
 
   const res = await getSpaceVoByIdUsingGet({
-    id: resolvedSpaceId.value,
+    id: resolvedSpaceId.value as any,
   })
   if (res.data.code === 0 && res.data.data) {
     space.value = res.data.data

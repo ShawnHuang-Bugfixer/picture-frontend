@@ -57,10 +57,15 @@ const route = useRoute()
 const picture = ref<API.PictureVO>({})
 const dataList = ref<API.ImageSearchResult[]>([])
 const loading = ref(true)
+const normalizeQueryValue = (value: unknown) => {
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+  return value ?? undefined
+}
 
 const pictureId = computed(() => {
-  const rawId = route.query?.pictureId
-  return rawId ? Number(rawId) : undefined
+  return normalizeQueryValue(route.query?.pictureId)
 })
 
 const fetchPictureDetail = async () => {
@@ -69,7 +74,7 @@ const fetchPictureDetail = async () => {
   }
   try {
     const res = await getPictureVoByIdUsingGet({
-      id: pictureId.value,
+      id: pictureId.value as any,
     })
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data
@@ -89,7 +94,7 @@ const fetchResultData = async () => {
   loading.value = true
   try {
     const res = await searchPictureByPictureUsingPost({
-      pictureId: pictureId.value,
+      pictureId: pictureId.value as any,
     })
     if (res.data.code === 0 && res.data.data) {
       dataList.value = res.data.data ?? []

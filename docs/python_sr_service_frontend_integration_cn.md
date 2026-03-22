@@ -82,7 +82,7 @@ curl -X POST "http://localhost:8123/api/picture/upload" \
   "type": "video",
   "pictureId": 2026999999999999999,
   "scale": 2,
-  "modelName": "realesr-animevideov3",
+  "modelName": "RealESRGAN_x4plus",
   "modelVersion": "v1.0.0",
   "videoOptions": {
     "keepAudio": true,

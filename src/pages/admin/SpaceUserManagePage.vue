@@ -80,7 +80,7 @@ const formData = reactive<API.SpaceUserAddRequest>({})
 
 const fetchData = async () => {
   const res = await listSpaceUserUsingPost({
-    spaceId: Number(props.id),
+    spaceId: props.id as any,
   })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data ?? []
@@ -91,7 +91,7 @@ const fetchData = async () => {
 
 const handleSubmit = async () => {
   const res = await addSpaceUserUsingPost({
-    spaceId: Number(props.id),
+    spaceId: props.id as any,
     ...formData,
   })
   if (res.data.code === 0) {
@@ -108,7 +108,7 @@ const handleRoleChange = (value: string | number, record: API.SpaceUserVO) => {
 
 const editSpaceRole = async (value: string, record: API.SpaceUserVO) => {
   const res = await editSpaceUserUsingPost({
-    id: Number(record.id),
+    id: record.id,
     spaceRole: value,
   })
   if (res.data.code === 0) {
@@ -122,7 +122,8 @@ const doDelete = async (id: string | number) => {
   if (!id) {
     return
   }
-  const res = await deleteSpaceUserUsingPost({ id: Number(id) })
+  const res = await deleteSpaceUserUsingPost({ id: id as any })
+  
   if (res.data.code === 0) {
     message.success('成员已移除')
     fetchData()

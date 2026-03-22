@@ -96,8 +96,9 @@ const fetchPermissions = async () => {
   if (!loginUser.value?.id) return
   try {
     const res = await getPermissionsUsingPost({
+      spaceId: undefined,
       userId: loginUser.value.id,
-      pictureId: Number(props.id),
+      pictureId: props.id as any,
     })
     if (res.data.code === 0 && res.data.data) {
       permissionList.value = res.data.data
@@ -132,7 +133,7 @@ const canDelete = computed(() => {
 const fetchPictureDetail = async () => {
   try {
     const res = await getPictureVoByIdUsingGet({
-      id: Number(props.id),
+      id: props.id as any,
     })
     if (res.data.code === 0 && res.data.data) {
       picture.value = res.data.data

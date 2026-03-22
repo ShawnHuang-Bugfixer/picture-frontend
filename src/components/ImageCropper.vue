@@ -52,7 +52,7 @@ import PictureEditWebSocket from '@/utils/pictureEditWebSocket.ts'
 interface Props {
   imageUrl?: string
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string | number
   space?: API.SpaceVO
   onSuccess?: (newPicture: API.PictureVO) => void
 }
@@ -120,7 +120,7 @@ const handleUpload = async ({ file }: { file: File }) => {
   try {
     const params: API.PictureUploadRequest = props.picture?.id ? { id: props.picture.id } : {}
     if (props.spaceId) {
-      params.spaceId = props.spaceId
+      params.spaceId = props.spaceId as any
     }
     const res = (await uploadPictureUsingPost(params, {}, file)) as UploadResponse
     if (res.data.code === 0 && res.data.data) {

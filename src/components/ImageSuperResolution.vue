@@ -66,10 +66,7 @@ const props = defineProps<Props>()
 const visible = ref(false)
 const submitLoading = ref(false)
 const videoExtSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
-const videoModelOptions = [
-  { label: 'realesr-animevideov3', value: 'realesr-animevideov3' },
-  { label: 'RealESRGAN_x4plus', value: 'RealESRGAN_x4plus' },
-]
+const videoModelOptions = [{ label: 'RealESRGAN_x4plus', value: 'RealESRGAN_x4plus' }]
 
 const isVideoTask = computed(() => {
   const ext = (props.picture?.picFormat || '').toLowerCase()
@@ -78,7 +75,7 @@ const isVideoTask = computed(() => {
 
 const formState = reactive({
   scale: 4 as 2 | 4,
-  modelName: 'realesr-animevideov3',
+  modelName: 'RealESRGAN_x4plus',
   modelVersion: 'v1.0.0',
   keepAudio: true,
   extractFrameFirst: true,
@@ -138,7 +135,7 @@ const handleSubmit = async () => {
 const openModal = () => {
   formState.scale = 4
   formState.modelVersion = 'v1.0.0'
-  formState.modelName = 'realesr-animevideov3'
+  formState.modelName = 'RealESRGAN_x4plus'
   formState.keepAudio = true
   formState.extractFrameFirst = true
   formState.fpsOverride = undefined

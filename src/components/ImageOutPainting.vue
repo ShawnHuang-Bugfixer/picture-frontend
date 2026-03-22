@@ -38,7 +38,7 @@ import { getOnceTokenUsingGet } from '@/api/userController.ts'
 
 interface Props {
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string | number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -117,7 +117,7 @@ const handleUpload = async () => {
 
     const params: API.PictureUploadRequest = {
       fileUrl: resultImageUrl.value,
-      spaceId: props.spaceId,
+      spaceId: props.spaceId as any,
     }
     if (props.picture) {
       params.id = props.picture.id

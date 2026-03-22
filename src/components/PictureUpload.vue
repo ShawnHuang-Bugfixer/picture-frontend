@@ -32,7 +32,7 @@ import { getOnceTokenUsingGet } from '@/api/userController.ts'
 
 interface Props {
   picture?: API.PictureVO
-  spaceId?: number
+  spaceId?: string | number
   onSuccess?: (newPicture: API.PictureVO) => void
 }
 
@@ -65,7 +65,7 @@ const handleUpload = async ({ file }: { file: File }) => {
   loading.value = true
   try {
     const params: API.PictureUploadRequest = props.picture ? { id: props.picture.id } : {}
-    params.spaceId = props.spaceId
+    params.spaceId = props.spaceId as any
     const body = uploadMediaType.value === 'video' ? { mediaType: 'video' } : {}
     const res = (await uploadPictureUsingPost(params, body, file)) as UploadResponse
     if (res.data.code === 0 && res.data.data) {

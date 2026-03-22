@@ -3,7 +3,9 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">结果中心</h2>
-        <p class="app-page__subtitle">筛选并查看当前工作空间内的图片与视频超分结果，支持预览、下载与回到工作台。</p>
+        <p class="app-page__subtitle">
+          筛选并查看当前工作空间内的图片与视频超分结果，支持预览、下载与回到工作空间。
+        </p>
       </div>
       <div class="app-page__actions">
         <a-tag>{{ spaceTypeText }}</a-tag>
@@ -20,7 +22,7 @@
           <a-input
             v-model:value="searchParams.modelName"
             allow-clear
-            placeholder="例如 realesr-animevideov3"
+            placeholder="例如 RealESRGAN_x4plus"
             style="width: 220px"
           />
         </a-form-item>
@@ -85,6 +87,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import {
+  listMySrTaskResultVoByPageUsingPost,
   listSpaceSrTaskResultVoByPageUsingPost,
   type SrTaskResultVO,
 } from '@/api/srTaskController.ts'
@@ -119,7 +122,6 @@ const searchParams = reactive({
   bizType: undefined as 'image' | 'video' | undefined,
 })
 
-const spaceId = computed(() => String(props.id))
 const isTeamSpace = computed(() => space.value.spaceType === 1)
 const spaceTypeText = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
 const hasViewPermission = computed(() => {
@@ -143,7 +145,7 @@ const checkAccess = async () => {
     loginUser.value = loginRes.data.data
   }
 
-  const spaceRes = await getSpaceVoByIdUsingGet({ id: spaceId.value as any })
+  const spaceRes = await getSpaceVoByIdUsingGet({ id: props.id as any })
   if (spaceRes.data.code === 0 && spaceRes.data.data) {
     space.value = spaceRes.data.data
   } else {
@@ -155,7 +157,7 @@ const checkAccess = async () => {
   }
 
   const permissionRes = await getPermissionsUsingPost({
-    spaceId: spaceId.value as any,
+    spaceId: props.id as any,
     userId: loginUser.value.id,
   })
   if (permissionRes.data.code === 0 && permissionRes.data.data) {
@@ -170,20 +172,37 @@ const checkAccess = async () => {
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await listSpaceSrTaskResultVoByPageUsingPost({
-      spaceId: spaceId.value,
+    if (isTeamSpace.value) {
+      const res = await listSpaceSrTaskResultVoByPageUsingPost({
+        spaceId: props.id as any,
+        current: searchParams.current,
+        pageSize: searchParams.pageSize,
+        taskNo: searchParams.taskNo,
+        modelName: searchParams.modelName,
+        bizType: searchParams.bizType,
+      })
+      if (res.data.code === 0 && res.data.data) {
+        dataList.value = res.data.data.records ?? []
+        total.value = res.data.data.total ?? 0
+        return
+      }
+      message.error(`加载超分结果失败，${res.data.message || '请稍后重试'}`)
+      return
+    }
+
+    const res = await listMySrTaskResultVoByPageUsingPost({
+      bizType: searchParams.bizType,
       current: searchParams.current,
       pageSize: searchParams.pageSize,
       taskNo: searchParams.taskNo,
       modelName: searchParams.modelName,
-      bizType: searchParams.bizType,
     })
     if (res.data.code === 0 && res.data.data) {
       dataList.value = res.data.data.records ?? []
       total.value = res.data.data.total ?? 0
       return
     }
-    message.error(`加载超分结果失败：${res.data.message || '请稍后重试'}`)
+    message.error(`加载超分结果失败，${res.data.message || '请稍后重试'}`)
   } finally {
     loading.value = false
   }

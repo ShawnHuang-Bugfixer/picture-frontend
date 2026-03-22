@@ -3,7 +3,9 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">{{ space.spaceName || '工作空间' }}</h2>
-        <p class="app-page__subtitle">{{ spaceTypeTitle }}，在这里集中查看素材、权限、结果和协作动作。</p>
+        <p class="app-page__subtitle">
+          {{ spaceTypeTitle }}，在这里集中查看素材、权限、结果和协作动作。
+        </p>
       </div>
       <div class="app-page__actions">
         <a-button v-if="canUploadPicture" type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
@@ -43,13 +45,13 @@
       <div class="panel-top">
         <div>
           <h3 class="app-section-title">素材列表</h3>
-          <p class="app-section-desc">保留现有搜索、颜色检索和分页逻辑，但视觉上归入工作台内容区。</p>
+          <p class="app-section-desc">保留现有搜索、颜色检索和分页逻辑，但文案与布局统一到工作台样式。</p>
         </div>
         <a-progress type="circle" :size="46" :percent="spaceUsagePercentNumber" />
       </div>
       <PictureSearchForm :onSearch="onSearch" />
       <div class="color-filter">
-        <span class="color-filter__label">按颜色检索</span>
+        <span class="color-filter__label">按颜色搜索</span>
         <color-picker format="hex" @pureColorChange="onColorChange" />
       </div>
     </section>
@@ -77,7 +79,7 @@
 
     <BatchEditPictureModal
       ref="batchEditPictureModalRef"
-      :spaceId="spaceId"
+      :spaceId="props.id"
       :pictureList="dataList"
       :onSuccess="onBatchEditPictureSuccess"
     />
@@ -136,7 +138,6 @@ const currentSuperResolutionPicture = ref<API.PictureVO>()
 const srPollingTimerMap = new Map<string, ReturnType<typeof setInterval>>()
 const SR_TERMINAL_STATUS = new Set(['SUCCEEDED', 'FAILED', 'CANCELLED'])
 
-const spaceId = computed(() => String(props.id))
 const spaceTypeTitle = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
 const spaceUsagePercentNumber = computed(() => {
   const maxSize = Number(space.value.maxSize || 0)
@@ -148,7 +149,7 @@ const spaceUsagePercentNumber = computed(() => {
 })
 const spaceUsagePercent = computed(() => spaceUsagePercentNumber.value.toFixed(1))
 
-const fetchLoginUser = async () => {
+async function fetchLoginUser() {
   const res = await getLoginUserUsingGet()
   if (res.data.code === 0 && res.data.data) {
     loginUser.value = res.data.data
@@ -156,13 +157,15 @@ const fetchLoginUser = async () => {
 }
 
 const fetchPermissions = async () => {
-  if (!loginUser.value?.id || !spaceId.value) {
+  if (!loginUser.value?.id || !props.id) {
     return
   }
+
   try {
     const res = await getPermissionsUsingPost({
-      spaceId: spaceId.value as any,
+      spaceId: props.id as any,
       userId: loginUser.value.id,
+      pictureId: undefined,
     })
     if (res.data.code === 0 && res.data.data) {
       permissionList.value = res.data.data
@@ -209,16 +212,16 @@ const canViewSrResult = computed(() => {
 const fetchSpaceDetail = async () => {
   try {
     const res = await getSpaceVoByIdUsingGet({
-      id: spaceId.value as any,
+      id: props.id as any,
     })
     if (res.data.code === 0 && res.data.data) {
       space.value = res.data.data
       return
     }
-    message.error('获取工作空间详情失败，' + res.data.message)
+    message.error('获取空间详情失败，' + res.data.message)
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '请稍后重试'
-    message.error('获取工作空间详情失败，' + errorMessage)
+    message.error('获取空间详情失败：' + errorMessage)
   }
 }
 
@@ -226,7 +229,7 @@ const fetchData = async () => {
   loading.value = true
   const res = await listPictureVoByPageUsingPost({
     ...searchParams.value,
-    spaceId: spaceId.value as any,
+    spaceId: props.id as any,
   })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []
@@ -256,13 +259,13 @@ const onColorChange = async (color: string) => {
   loading.value = true
   const res = await searchPictureByColorUsingPost({
     picColor: color,
-    spaceId: spaceId.value as any,
+    spaceId: props.id as any,
   })
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data ?? []
     total.value = dataList.value.length
   } else {
-    message.error('按颜色检索失败，' + res.data.message)
+    message.error('按颜色搜索失败，' + res.data.message)
   }
   loading.value = false
 }
@@ -437,8 +440,8 @@ watch(
 
 @media (max-width: 768px) {
   .panel-top {
-    align-items: flex-start;
     flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

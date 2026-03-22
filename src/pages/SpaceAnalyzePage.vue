@@ -16,22 +16,22 @@
 
     <section class="analysis-grid">
       <a-col :xs="24" :md="12">
-        <SpaceUsageAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceUsageAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <a-col :xs="24" :md="12">
-        <SpaceCategoryAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceCategoryAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <a-col :xs="24" :md="12">
-        <SpaceTagAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceTagAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <a-col :xs="24" :md="12">
-        <SpaceSizeAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceSizeAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <a-col :xs="24" :md="12">
-        <SpaceUserAnalyze :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceUserAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
       <a-col :xs="24" :md="12">
-        <SpaceRankAnalyze v-if="isAdmin" :spaceId="spaceId" :queryAll="queryAll" :queryPublic="queryPublic" />
+        <SpaceRankAnalyze v-if="isAdmin" :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
       </a-col>
     </section>
   </div>
@@ -51,7 +51,10 @@ import SpaceRankAnalyze from '@/components/analyze/SpaceRankAnalyze.vue'
 const route = useRoute()
 const spaceId = computed(() => {
   const rawId = route.query?.spaceId
-  return rawId ? Number(rawId) : undefined
+  if (Array.isArray(rawId)) {
+    return rawId[0]
+  }
+  return rawId ?? undefined
 })
 const queryAll = computed(() => Boolean(route.query?.queryAll))
 const queryPublic = computed(() => Boolean(route.query?.queryPublic))

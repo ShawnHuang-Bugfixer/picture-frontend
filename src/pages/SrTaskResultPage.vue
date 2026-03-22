@@ -4,11 +4,12 @@
       <div>
         <h2 class="app-page__title">结果中心</h2>
         <p class="app-page__subtitle">
-          筛选并查看当前工作空间内的图片与视频超分结果，支持预览、下载与回到工作空间。
+          筛选并查看当前工作空间内的图片与视频超分结果，支持预览、下载和追踪输出元数据。
         </p>
       </div>
       <div class="app-page__actions">
         <a-tag>{{ spaceTypeText }}</a-tag>
+        <a-button @click="fetchData">刷新结果</a-button>
         <a-button @click="backToSpace">返回工作空间</a-button>
       </div>
     </section>
@@ -16,7 +17,12 @@
     <section class="app-filter-bar">
       <a-form layout="inline" :model="searchParams">
         <a-form-item label="任务号">
-          <a-input v-model:value="searchParams.taskNo" allow-clear placeholder="输入任务号" style="width: 220px" />
+          <a-input
+            v-model:value="searchParams.taskNo"
+            allow-clear
+            placeholder="输入任务号"
+            style="width: 220px"
+          />
         </a-form-item>
         <a-form-item label="模型">
           <a-input
@@ -27,7 +33,11 @@
           />
         </a-form-item>
         <a-form-item label="类型">
-          <a-select v-model:value="searchParams.bizType" :options="bizTypeOptions" style="width: 140px" />
+          <a-select
+            v-model:value="searchParams.bizType"
+            :options="bizTypeOptions"
+            style="width: 140px"
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" @click="doSearch">查询</a-button>
@@ -44,19 +54,42 @@
         <a-list
           v-else
           :data-source="dataList"
-          :grid="{ gutter: 16, column: 4, xs: 1, sm: 2, md: 3, lg: 4 }"
+          :grid="{ gutter: 16, column: 4, xs: 1, sm: 2, md: 2, lg: 3, xl: 4 }"
         >
           <template #renderItem="{ item }">
             <a-list-item>
               <a-card hoverable class="result-card">
-                <video v-if="isVideoResult(item)" :src="item.outputUrl" controls class="result-preview" />
+                <video
+                  v-if="isVideoResult(item)"
+                  :src="item.outputUrl"
+                  controls
+                  class="result-preview"
+                />
                 <a-image v-else :src="item.outputUrl" alt="sr-result" class="result-preview" />
+
                 <div class="meta">
+                  <div class="meta-row">
+                    <a-tag color="blue">{{ getSrBizTypeText(item.bizType) }}</a-tag>
+                    <a-tag>{{ item.modelName || '-' }}</a-tag>
+                  </div>
                   <div><span class="label">任务号：</span>{{ item.taskNo || '-' }}</div>
-                  <div><span class="label">类型：</span>{{ item.bizType || '-' }}</div>
-                  <div><span class="label">模型：</span>{{ item.modelName || '-' }}</div>
-                  <div><span class="label">耗时：</span>{{ item.costMs ?? '-' }} ms</div>
-                  <div v-if="isTeamSpace"><span class="label">创建者：</span>{{ item.userId ?? '-' }}</div>
+                  <div><span class="label">输出格式：</span>{{ item.outputFormat || '-' }}</div>
+                  <div><span class="label">输出尺寸：</span>{{ formatOutputDimensions(item) }}</div>
+                  <div><span class="label">文件大小：</span>{{ formatSize(item.outputSize) }}</div>
+                  <div><span class="label">耗时：</span>{{ formatDuration(item.costMs) }}</div>
+                  <div v-if="isVideoResult(item)">
+                    <span class="label">视频信息：</span>{{ formatVideoMetrics(item) }}
+                  </div>
+                  <div><span class="label">尝试次数：</span>{{ item.attempt ?? '-' }}</div>
+                  <div><span class="label">输出 Key：</span>{{ item.outputFileKey || '-' }}</div>
+                  <div><span class="label">Trace ID：</span>{{ item.traceId || '-' }}</div>
+                  <div>
+                    <span class="label">完成时间：</span
+                    >{{ item.updateTime || item.createTime || '-' }}
+                  </div>
+                  <div v-if="isTeamSpace">
+                    <span class="label">创建者：</span>{{ item.userId ?? '-' }}
+                  </div>
                   <a-space style="margin-top: 8px">
                     <a :href="item.outputUrl" target="_blank">查看原文件</a>
                     <a :href="item.outputUrl" download>下载</a>
@@ -92,7 +125,9 @@ import {
   type SrTaskResultVO,
 } from '@/api/srTaskController.ts'
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
+import { getSrBizTypeText, isVideoMedia } from '@/constants/srTask.ts'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
+import { formatSize } from '@/utils'
 
 interface Props {
   id: string | number
@@ -107,7 +142,6 @@ const dataList = ref<SrTaskResultVO[]>([])
 const space = ref<API.SpaceVO>({})
 const permissionList = ref<string[]>([])
 const loginUser = ref<API.LoginUserVO>()
-const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
 const bizTypeOptions = [
   { label: '全部', value: undefined },
   { label: '图片', value: 'image' },
@@ -135,8 +169,34 @@ const isVideoResult = (item: SrTaskResultVO) => {
   if (item.bizType === 'video') {
     return true
   }
-  const format = (item.outputFormat || '').toLowerCase()
-  return videoFormatSet.has(format)
+  return isVideoMedia(item.outputFormat)
+}
+
+const formatOutputDimensions = (item: SrTaskResultVO) => {
+  if (!item.outputWidth || !item.outputHeight) {
+    return '-'
+  }
+  return `${item.outputWidth} × ${item.outputHeight}`
+}
+
+const formatVideoMetrics = (item: SrTaskResultVO) => {
+  const parts = [
+    item.durationMs ? `时长 ${formatDuration(item.durationMs)}` : '',
+    item.fps ? `FPS ${item.fps}` : '',
+    item.codec ? `编码 ${item.codec}` : '',
+    item.bitrateKbps ? `码率 ${item.bitrateKbps} kbps` : '',
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(' / ') : '-'
+}
+
+const formatDuration = (value?: number) => {
+  if (!value && value !== 0) {
+    return '-'
+  }
+  if (value < 1000) {
+    return `${value} ms`
+  }
+  return `${(value / 1000).toFixed(2)} s`
 }
 
 const checkAccess = async () => {
@@ -256,6 +316,13 @@ onMounted(async () => {
   margin-top: 10px;
   font-size: 13px;
   line-height: 1.8;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .label {

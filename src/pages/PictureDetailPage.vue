@@ -3,11 +3,12 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">素材详情</h2>
-        <p class="app-page__subtitle">查看素材信息、下载、分享，并决定是否继续编辑或发起后续处理。</p>
+        <p class="app-page__subtitle">查看素材信息、下载与分享，并直接发起后续的编辑或超分处理。</p>
       </div>
       <div class="app-page__actions">
         <a-button type="primary" @click="doDownload">下载素材</a-button>
         <a-button @click="doShare">分享</a-button>
+        <a-button @click="doSuperResolution">提交超分</a-button>
         <a-button v-if="canEdit" @click="doEdit">编辑</a-button>
         <a-button v-if="canDelete" danger @click="doDelete">删除</a-button>
       </div>
@@ -53,19 +54,27 @@
         </a-descriptions>
       </div>
     </section>
+
     <ShareModal ref="shareModalRef" title="分享素材" :link="shareLink" />
+    <ImageSuperResolution
+      ref="imageSuperResolutionRef"
+      :picture="picture"
+      :onSuccess="onSuperResolutionTaskCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watchEffect } from 'vue'
 import { message } from 'ant-design-vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
-import { downloadImage, formatSize, toHexColor } from '@/utils'
+import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
 import ShareModal from '@/components/ShareModal.vue'
+import { isVideoMedia } from '@/constants/srTask.ts'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
+import { downloadImage, formatSize, toHexColor } from '@/utils'
 
 interface Props {
   id: string | number
@@ -77,13 +86,10 @@ const picture = ref<API.PictureVO>({})
 const loginUser = ref<API.LoginUserVO>()
 const permissionList = ref<string[]>([])
 const shareModalRef = ref()
+const imageSuperResolutionRef = ref()
 const shareLink = ref('')
 
-const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
-const isVideoPicture = computed(() => {
-  const format = (picture.value.picFormat || '').toLowerCase()
-  return videoFormatSet.has(format)
-})
+const isVideoPicture = computed(() => isVideoMedia(picture.value.picFormat))
 
 const fetchLoginUser = async () => {
   const res = await getLoginUserUsingGet()
@@ -93,7 +99,9 @@ const fetchLoginUser = async () => {
 }
 
 const fetchPermissions = async () => {
-  if (!loginUser.value?.id) return
+  if (!loginUser.value?.id) {
+    return
+  }
   try {
     const res = await getPermissionsUsingPost({
       spaceId: undefined,
@@ -109,7 +117,9 @@ const fetchPermissions = async () => {
 }
 
 const canEdit = computed(() => {
-  if (!picture.value) return false
+  if (!picture.value) {
+    return false
+  }
   if (!picture.value.spaceId) {
     return permissionList.value.includes(SPACE_PERMISSION_ENUM.PUBLIC_MODIFY_IMAGE)
   }
@@ -120,7 +130,9 @@ const canEdit = computed(() => {
 })
 
 const canDelete = computed(() => {
-  if (!picture.value) return false
+  if (!picture.value) {
+    return false
+  }
   if (!picture.value.spaceId) {
     return permissionList.value.includes(SPACE_PERMISSION_ENUM.PUBLIC_DELETE_IMAGE)
   }
@@ -139,10 +151,10 @@ const fetchPictureDetail = async () => {
       picture.value = res.data.data
       return
     }
-    message.error('获取素材详情失败，' + res.data.message)
+    message.error(`获取素材详情失败，${res.data.message || '请稍后重试'}`)
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '请稍后重试'
-    message.error('获取素材详情失败，' + errorMessage)
+    message.error(`获取素材详情失败，${errorMessage}`)
   }
 }
 
@@ -169,7 +181,9 @@ const doEdit = () => {
 
 const doDelete = async () => {
   const id = picture.value.id
-  if (!id) return
+  if (!id) {
+    return
+  }
   const res = await deletePictureUsingPost({ id })
   if (res.data.code === 0) {
     message.success('删除成功')
@@ -180,13 +194,27 @@ const doDelete = async () => {
 }
 
 const doDownload = () => {
-  if (!picture.value.url) return
+  if (!picture.value.url) {
+    return
+  }
   downloadImage(picture.value.url)
 }
 
 const doShare = () => {
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.value.id}`
   shareModalRef.value?.openModal()
+}
+
+const doSuperResolution = () => {
+  imageSuperResolutionRef.value?.openModal()
+}
+
+const onSuperResolutionTaskCreated = () => {
+  if (picture.value.spaceId) {
+    router.push(`/space/${picture.value.spaceId}/sr_result`)
+    return
+  }
+  message.success('任务已提交，请稍后在结果中心查看')
 }
 </script>
 

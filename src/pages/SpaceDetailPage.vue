@@ -8,17 +8,34 @@
         </p>
       </div>
       <div class="app-page__actions">
-        <a-button v-if="canUploadPicture" type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
+        <a-button
+          v-if="canUploadPicture"
+          type="primary"
+          :href="`/add_picture?spaceId=${id}`"
+          target="_blank"
+        >
           发起任务
         </a-button>
-        <a-button v-if="canManageSpaceUser" :icon="h(TeamOutlined)" :href="`/spaceUserManage/${id}`" target="_blank">
+        <a-button
+          v-if="canManageSpaceUser"
+          :icon="h(TeamOutlined)"
+          :href="`/spaceUserManage/${id}`"
+          target="_blank"
+        >
           成员管理
         </a-button>
-        <a-button v-if="canAnalyseSpace" :icon="h(BarChartOutlined)" :href="`/space_analyze?spaceId=${id}`" target="_blank">
+        <a-button
+          v-if="canAnalyseSpace"
+          :icon="h(BarChartOutlined)"
+          :href="`/space_analyze?spaceId=${id}`"
+          target="_blank"
+        >
           空间分析
         </a-button>
         <a-button v-if="canViewSrResult" @click="goToSrResultPage">结果中心</a-button>
-        <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit">批量编辑</a-button>
+        <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit"
+          >批量编辑</a-button
+        >
       </div>
     </section>
 
@@ -45,7 +62,9 @@
       <div class="panel-top">
         <div>
           <h3 class="app-section-title">素材列表</h3>
-          <p class="app-section-desc">保留现有搜索、颜色检索和分页逻辑，但文案与布局统一到工作台样式。</p>
+          <p class="app-section-desc">
+            保留现有搜索、颜色检索和分页逻辑，并直接接入空间内的超分任务入口。
+          </p>
         </div>
         <a-progress type="circle" :size="46" :percent="spaceUsagePercentNumber" />
       </div>
@@ -109,6 +128,11 @@ import BatchEditPictureModal from '@/components/BatchEditPictureModal.vue'
 import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
 import PictureList from '@/components/PictureList.vue'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
+import {
+  getSrProgressStageText,
+  getSrTaskStatusText,
+  SR_TASK_TERMINAL_STATUS,
+} from '@/constants/srTask.ts'
 import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
 
@@ -136,7 +160,6 @@ const batchEditPictureModalRef = ref()
 const imageSuperResolutionModalRef = ref()
 const currentSuperResolutionPicture = ref<API.PictureVO>()
 const srPollingTimerMap = new Map<string, ReturnType<typeof setInterval>>()
-const SR_TERMINAL_STATUS = new Set(['SUCCEEDED', 'FAILED', 'CANCELLED'])
 
 const spaceTypeTitle = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
 const spaceUsagePercentNumber = computed(() => {
@@ -218,10 +241,10 @@ const fetchSpaceDetail = async () => {
       space.value = res.data.data
       return
     }
-    message.error('获取空间详情失败，' + res.data.message)
+    message.error(`获取空间详情失败，${res.data.message || '请稍后重试'}`)
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '请稍后重试'
-    message.error('获取空间详情失败：' + errorMessage)
+    message.error(`获取空间详情失败，${errorMessage}`)
   }
 }
 
@@ -235,7 +258,7 @@ const fetchData = async () => {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
   } else {
-    message.error('获取素材失败，' + res.data.message)
+    message.error(`获取素材失败，${res.data.message || '请稍后重试'}`)
   }
   loading.value = false
 }
@@ -265,7 +288,7 @@ const onColorChange = async (color: string) => {
     dataList.value = res.data.data ?? []
     total.value = dataList.value.length
   } else {
-    message.error('按颜色搜索失败，' + res.data.message)
+    message.error(`按颜色搜索失败，${res.data.message || '请稍后重试'}`)
   }
   loading.value = false
 }
@@ -293,7 +316,7 @@ const startSrTaskPolling = (taskId: string) => {
 
   message.loading({
     key: messageKey,
-    content: `超分任务已提交（${taskId}），正在排队处理...`,
+    content: `超分任务已提交（${taskId}），正在进入处理队列...`,
     duration: 0,
   })
 
@@ -305,7 +328,7 @@ const startSrTaskPolling = (taskId: string) => {
         if (pollingCount >= maxPollingCount) {
           message.warning({
             key: messageKey,
-            content: `超分任务查询超时（${taskId}），请稍后查看`,
+            content: `超分任务查询超时（${taskId}），请稍后在结果中心查看`,
             duration: 4,
           })
           stopSrTaskPolling(taskId, false)
@@ -316,17 +339,19 @@ const startSrTaskPolling = (taskId: string) => {
       const task = res.data.data
       const status = task.status || 'QUEUED'
       const progress = Number(task.progress ?? 0)
+      const statusText = getSrTaskStatusText(status)
+      const stageText = getSrProgressStageText(progress)
 
-      if (!SR_TERMINAL_STATUS.has(status)) {
+      if (!SR_TASK_TERMINAL_STATUS.has(status)) {
         message.loading({
           key: messageKey,
-          content: `超分任务处理中：${status}（${progress}%）`,
+          content: `超分任务处理中：${statusText}，${progress}% · ${stageText}`,
           duration: 0,
         })
         if (pollingCount >= maxPollingCount) {
           message.warning({
             key: messageKey,
-            content: `超分任务处理时间较长（${taskId}），请稍后刷新查看`,
+            content: `超分任务处理时间较长（${taskId}），请稍后在结果中心刷新查看`,
             duration: 4,
           })
           stopSrTaskPolling(taskId, false)
@@ -344,7 +369,7 @@ const startSrTaskPolling = (taskId: string) => {
       } else {
         message.error({
           key: messageKey,
-          content: `超分任务失败（${status}）：${task.errorMsg || '请稍后重试'}`,
+          content: `超分任务失败：${task.errorMsg || statusText}`,
           duration: 4,
         })
       }

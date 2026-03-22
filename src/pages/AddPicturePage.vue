@@ -4,10 +4,10 @@
       <div>
         <h2 class="app-page__title">{{ pictureId ? '编辑素材' : '发起超分任务' }}</h2>
         <p class="app-page__subtitle">
-          在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图与后续超分准备。
+          在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图和超分任务提交，减少在多个页面间来回切换。
         </p>
       </div>
-      <div class="app-page__actions" v-if="resolvedSpaceId">
+      <div v-if="resolvedSpaceId" class="app-page__actions">
         <a-button :href="`/space/${resolvedSpaceId}`" target="_blank">返回工作空间</a-button>
       </div>
     </section>
@@ -16,14 +16,18 @@
       <section class="app-card upload-card">
         <div class="card-head">
           <h3 class="app-section-title">任务素材</h3>
-          <p class="app-section-desc">支持文件上传和 URL 导入，图片与视频统一进入素材流。</p>
+          <p class="app-section-desc">支持文件上传和 URL 导入，图片与视频会统一进入当前任务流。</p>
         </div>
         <a-tabs v-model:activeKey="uploadType">
           <a-tab-pane key="file" tab="文件上传">
             <PictureUpload :picture="picture" :spaceId="resolvedSpaceId" :onSuccess="onSuccess" />
           </a-tab-pane>
           <a-tab-pane key="url" tab="URL 导入" force-render>
-            <UrlPictureUpload :picture="picture" :spaceId="resolvedSpaceId" :onSuccess="onSuccess" />
+            <UrlPictureUpload
+              :picture="picture"
+              :spaceId="resolvedSpaceId"
+              :onSuccess="onSuccess"
+            />
           </a-tab-pane>
         </a-tabs>
       </section>
@@ -31,7 +35,7 @@
       <section class="app-card info-card">
         <div class="card-head">
           <h3 class="app-section-title">任务信息</h3>
-          <p class="app-section-desc">录入标题、简介、分类和标签，便于后续检索和案例管理。</p>
+          <p class="app-section-desc">补齐名称、简介、分类和标签，便于后续检索、筛选和结果沉淀。</p>
         </div>
         <a-form name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
           <a-form-item name="name" label="名称">
@@ -57,13 +61,18 @@
             <a-select
               v-model:value="pictureForm.tags"
               mode="tags"
-              placeholder="输入标签"
+              placeholder="输入标签后回车"
               :options="tagOptions"
               allow-clear
             />
           </a-form-item>
           <a-form-item>
-            <a-button type="primary" html-type="submit" style="width: 100%" :disabled="!picture?.id">
+            <a-button
+              type="primary"
+              html-type="submit"
+              style="width: 100%"
+              :disabled="!picture?.id"
+            >
               保存信息
             </a-button>
           </a-form-item>
@@ -74,11 +83,12 @@
     <section v-if="picture?.id" class="app-card tool-card">
       <div class="card-head">
         <h3 class="app-section-title">后续处理</h3>
-        <p class="app-section-desc">上传成功后即可进入裁剪、扩图等步骤，为超分任务做准备。</p>
+        <p class="app-section-desc">上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。</p>
       </div>
       <div class="tool-actions">
         <a-button @click="doEditPicture">裁剪素材</a-button>
         <a-button type="primary" ghost @click="doImagePainting">AI 扩图</a-button>
+        <a-button type="primary" @click="doSuperResolution">提交超分任务</a-button>
         <a-button @click="showEditInfoModal = true">再次编辑信息</a-button>
       </div>
     </section>
@@ -97,9 +107,24 @@
       :spaceId="resolvedSpaceId"
       :onSuccess="onImageOutPaintingSuccess"
     />
+    <ImageSuperResolution
+      ref="imageSuperResolutionRef"
+      :picture="picture"
+      :onSuccess="onSuperResolutionTaskCreated"
+    />
 
-    <a-modal v-model:open="showEditInfoModal" title="素材信息" :footer="null" @cancel="showEditInfoModal = false">
-      <a-form name="pictureModalForm" layout="vertical" :model="pictureForm" @finish="handleSubmitModal">
+    <a-modal
+      v-model:open="showEditInfoModal"
+      title="素材信息"
+      :footer="null"
+      @cancel="showEditInfoModal = false"
+    >
+      <a-form
+        name="pictureModalForm"
+        layout="vertical"
+        :model="pictureForm"
+        @finish="handleSubmitModal"
+      >
         <a-form-item name="name" label="名称">
           <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
         </a-form-item>
@@ -120,7 +145,12 @@
           />
         </a-form-item>
         <a-form-item name="tags" label="标签">
-          <a-select v-model:value="pictureForm.tags" mode="tags" :options="tagOptions" allow-clear />
+          <a-select
+            v-model:value="pictureForm.tags"
+            mode="tags"
+            :options="tagOptions"
+            allow-clear
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
@@ -131,19 +161,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { message } from 'ant-design-vue'
+import { computed, onMounted, reactive, ref, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PictureUpload from '@/components/PictureUpload.vue'
-import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import ImageCropper from '@/components/ImageCropper.vue'
-import ImageOutPainting from '@/components/ImageOutPainting.vue'
 import {
   editPictureUsingPost,
   getPictureVoByIdUsingGet,
   listPictureTagCategoryUsingGet,
 } from '@/api/pictureController.ts'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import ImageCropper from '@/components/ImageCropper.vue'
+import ImageOutPainting from '@/components/ImageOutPainting.vue'
+import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
+import PictureUpload from '@/components/PictureUpload.vue'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 
 type SelectOption = {
   value: string
@@ -164,6 +195,8 @@ const space = ref<API.SpaceVO>()
 const showEditInfoModal = ref(false)
 const imageCropperRef = ref()
 const imageOutPaintingRef = ref()
+const imageSuperResolutionRef = ref()
+
 const normalizeQueryValue = (value: unknown) => {
   if (Array.isArray(value)) {
     return value[0]
@@ -171,13 +204,8 @@ const normalizeQueryValue = (value: unknown) => {
   return value ?? undefined
 }
 
-const resolvedSpaceId = computed(() => {
-  return normalizeQueryValue(route.query?.spaceId)
-})
-
-const pictureId = computed(() => {
-  return normalizeQueryValue(route.query?.id)
-})
+const resolvedSpaceId = computed(() => normalizeQueryValue(route.query?.spaceId))
+const pictureId = computed(() => normalizeQueryValue(route.query?.id))
 
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
@@ -188,7 +216,9 @@ const onSuccess = (newPicture: API.PictureVO) => {
 }
 
 const handleSubmit = async () => {
-  if (!picture.value?.id) return
+  if (!picture.value?.id) {
+    return
+  }
 
   const res = await editPictureUsingPost({
     id: picture.value.id,
@@ -201,7 +231,7 @@ const handleSubmit = async () => {
     })
     return
   }
-  message.error('保存失败，' + res.data.message)
+  message.error(`保存失败，${res.data.message || '请稍后重试'}`)
 }
 
 const getTagCategoryOptions = async () => {
@@ -217,11 +247,13 @@ const getTagCategoryOptions = async () => {
     }))
     return
   }
-  message.error('获取标签与分类失败，' + res.data.message)
+  message.error(`获取标签与分类失败，${res.data.message || '请稍后重试'}`)
 }
 
 const getOldPicture = async () => {
-  if (!pictureId.value) return
+  if (!pictureId.value) {
+    return
+  }
 
   const res = await getPictureVoByIdUsingGet({
     id: pictureId.value as any,
@@ -252,8 +284,25 @@ const onImageOutPaintingSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
 }
 
+const doSuperResolution = () => {
+  imageSuperResolutionRef.value?.openModal()
+}
+
+const onSuperResolutionTaskCreated = (taskId: string) => {
+  message.success(`任务 ${taskId} 已进入处理队列`)
+  if (resolvedSpaceId.value) {
+    router.push(`/space/${resolvedSpaceId.value}/sr_result`)
+    return
+  }
+  if (picture.value?.id) {
+    router.push(`/picture/${picture.value.id}`)
+  }
+}
+
 const fetchSpace = async () => {
-  if (!resolvedSpaceId.value) return
+  if (!resolvedSpaceId.value) {
+    return
+  }
 
   const res = await getSpaceVoByIdUsingGet({
     id: resolvedSpaceId.value as any,

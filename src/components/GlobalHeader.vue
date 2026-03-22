@@ -7,15 +7,15 @@
     </div>
     <div class="header-actions">
       <a-space v-if="loginUserStore.loginUser.id" wrap>
-        <a-button v-if="showCreateSpace" @click="router.push('/add_space')">创建工作空间</a-button>
-        <a-button type="primary" @click="router.push('/add_picture')">发起超分任务</a-button>
         <a-dropdown>
           <div class="profile-pill">
             <a-avatar :src="loginUserStore.loginUser.userAvatar">
               {{ loginUserInitial }}
             </a-avatar>
             <div class="profile-text">
-              <span class="profile-name">{{ loginUserStore.loginUser.userName || '未登录用户' }}</span>
+              <span class="profile-name">{{
+                loginUserStore.loginUser.userName || '未登录用户'
+              }}</span>
               <span class="profile-role">{{ roleLabel }}</span>
             </div>
           </div>
@@ -41,8 +41,8 @@ import { computed } from 'vue'
 import { message } from 'ant-design-vue'
 import { useRoute, useRouter } from 'vue-router'
 import { userLogoutUsingPost } from '@/api/userController.ts'
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SCENE_LABEL_MAP } from '@/constants/app.ts'
+import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
 
 const route = useRoute()
@@ -59,8 +59,9 @@ const sceneLabel = computed(() => {
   const key = route.meta?.scene as keyof typeof SCENE_LABEL_MAP | undefined
   return key ? SCENE_LABEL_MAP[key] : '工作台'
 })
-const showCreateSpace = computed(() => !String(route.path).startsWith('/add_space'))
-const loginUserInitial = computed(() => String(loginUserStore.loginUser.userName || '云').slice(0, 1))
+const loginUserInitial = computed(() =>
+  String(loginUserStore.loginUser.userName || '云').slice(0, 1),
+)
 const roleLabel = computed(() =>
   loginUserStore.loginUser.userRole === 'admin' ? '平台管理员' : '工作台成员',
 )

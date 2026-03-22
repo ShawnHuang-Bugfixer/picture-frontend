@@ -11,6 +11,7 @@
 
     <section class="nav-card">
       <p class="nav-section-title">主场景</p>
+
       <router-link
         v-for="item in primaryItems"
         :key="item.key"
@@ -21,18 +22,50 @@
         <component :is="item.icon" />
         <span>{{ item.label }}</span>
       </router-link>
-    </section>
 
-    <section v-if="teamSpaceList.length" class="nav-card">
-      <p class="nav-section-title">最近协作空间</p>
+      <div class="team-group">
+        <button
+          class="nav-link nav-link--button"
+          :class="{ active: isTeamGroupActive }"
+          type="button"
+          @click="toggleTeamGroup"
+        >
+          <ClusterOutlined />
+          <span>团队协作空间</span>
+          <DownOutlined class="team-group__arrow" :class="{ expanded: isTeamGroupExpanded }" />
+        </button>
+
+        <div v-if="isTeamGroupExpanded" class="team-group__panel">
+          <router-link
+            v-for="spaceUser in teamSpaceList"
+            :key="resolveSpaceId(spaceUser)"
+            class="team-group__item"
+            :class="{ active: currentTeamSpaceId === resolveSpaceId(spaceUser) }"
+            :to="`/space/${resolveSpaceId(spaceUser)}`"
+          >
+            <span class="team-group__item-name">
+              {{ spaceUser.space?.spaceName || `团队空间 ${resolveSpaceId(spaceUser)}` }}
+            </span>
+            <span class="team-group__item-meta">协作入口</span>
+          </router-link>
+
+          <div v-if="teamSpaceList.length === 0" class="team-group__empty">
+            暂无已加入的团队空间
+          </div>
+
+          <button class="team-group__create" type="button" @click="goToCreateTeamSpace">+</button>
+        </div>
+      </div>
+
       <router-link
-        v-for="spaceUser in teamSpaceList"
-        :key="resolveSpaceId(spaceUser)"
-        class="space-link"
-        :to="`/space/${resolveSpaceId(spaceUser)}`"
+        v-for="item in trailingItems"
+        :key="item.key"
+        class="nav-link"
+        :class="{ active: currentPath === item.key }"
+        :to="item.key"
       >
-        <span class="space-link__name">{{ spaceUser.space?.spaceName || `团队空间 ${resolveSpaceId(spaceUser)}` }}</span>
-        <span class="space-link__meta">协作入口</span>
+        <component :is="item.icon" />
+        <span>{{ item.label }}</span>
       </router-link>
     </section>
 
@@ -64,25 +97,30 @@ import {
   AppstoreOutlined,
   ClusterOutlined,
   DatabaseOutlined,
+  DownOutlined,
   HomeOutlined,
   SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { listMyTeamSpaceUsingPost } from '@/api/spaceUserController.ts'
 import { APP_SHORT_NAME } from '@/constants/app.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 
 const route = useRoute()
+const router = useRouter()
 const loginUserStore = useLoginUserStore()
 const teamSpaceList = ref<API.SpaceUserVO[]>([])
+const isTeamGroupExpanded = ref(false)
 
 const primaryItems = [
   { key: '/', label: '首页', icon: HomeOutlined },
   { key: '/my_space', label: '人工作空间', icon: UserOutlined },
-  { key: '/add_space?type=1', label: '团队协作空间', icon: ClusterOutlined },
+]
+
+const trailingItems = [
   { key: '/search_picture', label: '超分案例展厅', icon: AppstoreOutlined },
   { key: '/add_picture', label: '发起超分任务', icon: DatabaseOutlined },
 ]
@@ -100,6 +138,30 @@ const resolveSpaceId = (spaceUser: API.SpaceUserVO) => {
   return String(spaceUser.space?.id ?? spaceUser.spaceId ?? '')
 }
 
+const currentTeamSpaceId = computed(() => {
+  if (!String(route.path).startsWith('/space/')) {
+    return ''
+  }
+  const routeSpaceId = String(route.params.id ?? '')
+  return teamSpaceList.value.some((item) => resolveSpaceId(item) === routeSpaceId)
+    ? routeSpaceId
+    : ''
+})
+
+const isTeamGroupActive = computed(() => {
+  return (
+    Boolean(currentTeamSpaceId.value) || (route.path === '/add_space' && route.query.type === '1')
+  )
+})
+
+const toggleTeamGroup = () => {
+  isTeamGroupExpanded.value = !isTeamGroupExpanded.value
+}
+
+const goToCreateTeamSpace = () => {
+  router.push('/add_space?type=1')
+}
+
 const fetchTeamSpaceList = async () => {
   if (!loginUserStore.loginUser.id) {
     teamSpaceList.value = []
@@ -107,9 +169,7 @@ const fetchTeamSpaceList = async () => {
   }
   const res = await listMyTeamSpaceUsingPost()
   if (res.data.code === 0 && res.data.data) {
-    teamSpaceList.value = res.data.data
-      .filter((item) => Boolean(resolveSpaceId(item)))
-      .slice(0, 6)
+    teamSpaceList.value = res.data.data.filter((item) => Boolean(resolveSpaceId(item))).slice(0, 6)
     return
   }
   message.error('加载团队协作空间失败，' + res.data.message)
@@ -120,6 +180,16 @@ watch(
   () => {
     fetchTeamSpaceList()
   },
+)
+
+watch(
+  () => [route.path, route.params.id, route.query.type],
+  () => {
+    if (isTeamGroupActive.value) {
+      isTeamGroupExpanded.value = true
+    }
+  },
+  { immediate: true },
 )
 
 onMounted(() => {
@@ -201,8 +271,7 @@ onMounted(() => {
   text-transform: uppercase;
 }
 
-.nav-link,
-.space-link {
+.nav-link {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -214,27 +283,83 @@ onMounted(() => {
   transition: 0.2s ease;
 }
 
+.nav-link--button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
 .nav-link:hover,
-.space-link:hover,
-.nav-link.active {
+.nav-link.active,
+.team-group__item.active {
   background: @card-bg-soft;
   color: @primary-color;
 }
 
-.space-link {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+.team-group {
+  margin-bottom: 6px;
 }
 
-.space-link__name {
+.team-group__arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.team-group__arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.team-group__panel {
+  margin: 4px 0 8px;
+  padding: 4px 8px 4px 16px;
+}
+
+.team-group__create {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px dashed @border-strong;
+  border-radius: 14px;
+  background: #fff;
+  color: @primary-color;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+.team-group__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: @text-color;
+  transition: 0.2s ease;
+}
+
+.team-group__item:hover {
+  background: @card-bg-soft;
+  color: @primary-color;
+}
+
+.team-group__item-name {
   font-size: 14px;
   font-weight: 600;
 }
 
-.space-link__meta {
+.team-group__item-meta,
+.team-group__empty {
   color: @text-secondary;
   font-size: 12px;
+}
+
+.team-group__empty {
+  padding: 6px 12px 10px;
 }
 
 .status-card {

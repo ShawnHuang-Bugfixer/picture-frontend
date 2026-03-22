@@ -6,7 +6,6 @@
         <p class="app-page__subtitle">统一管理人工作空间、团队协作空间与容量使用情况。</p>
       </div>
       <div class="app-page__actions">
-        <a-button type="primary" href="/add_space" target="_blank">创建工作空间</a-button>
         <a-button href="/space_analyze?queryPublic=1" target="_blank">案例展厅分析</a-button>
         <a-button href="/space_analyze?queryAll=1" target="_blank">全局空间分析</a-button>
       </div>
@@ -36,7 +35,11 @@
           />
         </a-form-item>
         <a-form-item label="用户 ID">
-          <a-input-number v-model:value="searchParams.userId" placeholder="输入用户 ID" style="width: 180px" />
+          <a-input-number
+            v-model:value="searchParams.userId"
+            placeholder="输入用户 ID"
+            style="width: 180px"
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit">搜索</a-button>
@@ -45,7 +48,12 @@
     </section>
 
     <section class="app-table-card">
-      <a-table :columns="columns" :data-source="dataList" :pagination="pagination" @change="doTableChange">
+      <a-table
+        :columns="columns"
+        :data-source="dataList"
+        :pagination="pagination"
+        @change="doTableChange"
+      >
         <template #bodyCell="{ column, record }">
           <template v-if="column.dataIndex === 'spaceLevel'">
             {{ SPACE_LEVEL_MAP[record.spaceLevel] }}
@@ -65,8 +73,12 @@
           </template>
           <template v-else-if="column.key === 'action'">
             <a-space wrap>
-              <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">分析</a-button>
-              <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank">编辑</a-button>
+              <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank"
+                >分析</a-button
+              >
+              <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank"
+                >编辑</a-button
+              >
               <a-button danger @click="doDelete(record.id)">删除</a-button>
             </a-space>
           </template>

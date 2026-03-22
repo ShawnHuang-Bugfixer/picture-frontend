@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div
     class="picture-list"
     ref="listRef"
@@ -38,27 +38,47 @@
                       {{ tag }}
                     </a-tag>
                   </a-flex>
-                  <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px;">
-                    ID: <a style="cursor:pointer;user-select:all;" @click.stop="copyId(slotProps.item.id)">{{ slotProps.item.id }}</a>
+                  <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px">
+                    ID:
+                    <a
+                      style="cursor: pointer; user-select: all"
+                      @click.stop="copyId(slotProps.item.id)"
+                    >
+                      {{ slotProps.item.id }}
+                    </a>
                   </div>
                 </template>
               </a-card-meta>
               <template v-if="showOp" #actions>
                 <ShareAltOutlined v-if="showShare" @click.stop="doShare(slotProps.item, $event)" />
-                <SearchOutlined v-if="showSearch" @click.stop="doSearch(slotProps.item, $event)" />
+                <SearchOutlined
+                  v-if="showSearch"
+                  @click.stop="doSearch(slotProps.item, $event)"
+                />
                 <EditOutlined v-if="canEdit" @click.stop="doEdit(slotProps.item, $event)" />
                 <DeleteOutlined v-if="canDelete" @click.stop="doDelete(slotProps.item, $event)" />
-                <a v-if="showSuperResolution && onSuperResolution" style="color:#1677ff;" @click.stop="doSuperResolution(slotProps.item, $event)">AI超分</a>
-                <a v-if="showId && onAppeal" style="color:#faad14;" @click.stop="props.onAppeal?.(slotProps.item)">申诉</a>
+                <a
+                  v-if="showSuperResolution && onSuperResolution"
+                  style="color: #1677ff"
+                  @click.stop="doSuperResolution(slotProps.item, $event)"
+                >
+                  AI超分
+                </a>
+                <a
+                  v-if="showId && onAppeal"
+                  style="color: #faad14"
+                  @click.stop="props.onAppeal?.(slotProps.item)"
+                >
+                  申诉
+                </a>
               </template>
             </a-card>
           </a-list-item>
         </slot>
       </template>
     </a-list>
-    <div v-if="infinite && loading" class="infinite-loading">鍔犺浇涓?..</div>
-    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">鏆傛棤鍥剧墖</div>
-    <!-- Intersection Observer 閿氱偣 -->
+    <div v-if="infinite && loading" class="infinite-loading">加载中...</div>
+    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">暂无图片</div>
     <div v-if="infinite" ref="observerAnchor" class="observer-anchor"></div>
   </div>
 </template>
@@ -88,12 +108,12 @@ interface Props {
   infinite?: boolean
   useObserver?: boolean
   fetchFunc?: (params: any) => Promise<any>
-  showShare?: boolean // 鏂板
-  showSearch?: boolean // 鏂板
-  showId?: boolean // 鏂板
+  showShare?: boolean
+  showSearch?: boolean
+  showId?: boolean
   showSuperResolution?: boolean
   onSuperResolution?: (picture: API.PictureVO) => void
-  onAppeal?: (picture: API.PictureVO) => void // 鏂板
+  onAppeal?: (picture: API.PictureVO) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -105,8 +125,8 @@ const props = withDefaults(defineProps<Props>(), {
   autoFetch: false,
   infinite: false,
   useObserver: false,
-  showShare: true, // 榛樿鏄剧ず
-  showSearch: true, // 榛樿鏄剧ず
+  showShare: true,
+  showSearch: true,
   showId: false,
   showSuperResolution: false,
   onSuperResolution: undefined,
@@ -126,15 +146,14 @@ const pageSize = ref(20)
 const listRef = ref<HTMLElement | null>(null)
 const observerAnchor = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
-let lastLoadTime = 0 // 璁板綍涓婃鍔犺浇鏃堕棿
-const LOAD_INTERVAL = 500 // 璁剧疆鏈€灏忓姞杞介棿闅?
-// 閫氱煡鐖剁粍浠跺姞杞界姸鎬佸彉鍖?
+let lastLoadTime = 0
+const LOAD_INTERVAL = 500
+
 watch(loading, (newVal) => {
   emit('loading-change', newVal)
 })
 
 const fetchPictures = async (reset = false) => {
-  // 闃叉杩炵画蹇€熷姞杞?
   const now = Date.now()
   if (now - lastLoadTime < LOAD_INTERVAL) {
     return
@@ -175,16 +194,18 @@ const fetchPictures = async (reset = false) => {
   }
 }
 
-// 鐩戝惉 query 鍙樺寲鏃堕噸缃垎椤?
-watch(() => props.query, () => {
-  if (props.autoFetch) {
-    current.value = 1
-    finished.value = false
-    fetchPictures(true)
-  }
-}, { deep: true, immediate: true })
+watch(
+  () => props.query,
+  () => {
+    if (props.autoFetch) {
+      current.value = 1
+      finished.value = false
+      fetchPictures(true)
+    }
+  },
+  { deep: true, immediate: true },
+)
 
-// Observer婊氬姩妫€娴?
 const setupObserver = () => {
   if (!props.useObserver || !props.infinite) return
 
@@ -198,9 +219,8 @@ const setupObserver = () => {
       (entries) => {
         if (!props.infinite || finished.value || loading.value) return
 
-  const entry = entries[0]
+        const entry = entries[0]
         if (entry.isIntersecting) {
-          // 澧炲姞闃叉姈妫€娴?
           const now = Date.now()
           if (now - lastLoadTime > LOAD_INTERVAL) {
             current.value += 1
@@ -211,8 +231,8 @@ const setupObserver = () => {
       {
         root: listRef.value,
         threshold: 0.1,
-        rootMargin: '0px 0px 200px 0px' // 鎻愬墠200px鍔犺浇
-      }
+        rootMargin: '0px 0px 200px 0px',
+      },
     )
 
     nextTick(() => {
@@ -223,7 +243,6 @@ const setupObserver = () => {
   }
 }
 
-// 閲嶆柊璁剧疆Observer
 const resetObserver = () => {
   if (props.useObserver) {
     setupObserver()
@@ -244,29 +263,28 @@ onUnmounted(() => {
   }
 })
 
-// 褰撳叧閿睘鎬у彉鍖栨椂閲嶇疆Observer
-watch(() => [props.infinite, props.useObserver, props.query], () => {
-  if (props.useObserver && props.infinite) {
-    nextTick(() => {
-      setupObserver()
-    })
-  }
-})
+watch(
+  () => [props.infinite, props.useObserver, props.query],
+  () => {
+    if (props.useObserver && props.infinite) {
+      nextTick(() => {
+        setupObserver()
+      })
+    }
+  },
+)
 
-// 璺宠浆鑷冲浘鐗囪鎯呴〉
 const doClickPicture = (picture: API.PictureVO) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
 }
 
-// 鎼滅储
 const doSearch = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   window.open(`/search_picture?pictureId=${picture.id}`)
 }
 
-// 缂栬緫
 const doEdit = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   router.push({
@@ -278,7 +296,6 @@ const doEdit = (picture: API.PictureVO, e: Event) => {
   })
 }
 
-// 鍒犻櫎鏁版嵁
 const doDelete = async (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   const id = picture.id
@@ -303,7 +320,6 @@ const isVideoItem = (picture: API.PictureVO) => {
   return videoFormatSet.has(format)
 }
 
-// ----- 鍒嗕韩鎿嶄綔 ----
 const shareModalRef = ref()
 const shareLink = ref<string>()
 const doShare = (picture: API.PictureVO, e: Event) => {
@@ -314,18 +330,19 @@ const doShare = (picture: API.PictureVO, e: Event) => {
   }
 }
 
-// 澶嶅埗id鍒板壀鍒囨澘
 const copyId = (id: string | number) => {
   if (!id) return
   const text = String(id)
   if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => {
-      message.success('已复制')
-    }, () => {
-      message.error('复制失败')
-    })
+    navigator.clipboard.writeText(text).then(
+      () => {
+        message.success('已复制')
+      },
+      () => {
+        message.error('复制失败')
+      },
+    )
   } else {
-    // 鍏煎涓嶆敮鎸?clipboard 鐨勭幆澧?
     const input = document.createElement('input')
     input.value = text
     document.body.appendChild(input)
@@ -340,40 +357,46 @@ const copyId = (id: string | number) => {
   }
 }
 
-// 鏆撮湶閲嶇疆鏂规硶锛屼緵鐖剁粍浠惰皟鐢?
 defineExpose({
-  resetObserver
+  resetObserver,
 })
 </script>
 
 <style scoped lang="less">
 @import '@/styles/variables.less';
+
 .picture-card {
   background: @card-bg;
   border-radius: @border-radius;
   box-shadow: @shadow;
   transition: box-shadow 0.2s;
-  &:hover { box-shadow: 0 8px 32px 0 rgba(60, 72, 88, 0.16); }
+
+  &:hover {
+    box-shadow: 0 8px 32px 0 rgba(60, 72, 88, 0.16);
+  }
 }
+
 .picture-img {
   border-radius: @border-radius;
   object-fit: cover;
   width: 100%;
   height: 180px;
 }
+
 .infinite-loading {
   text-align: center;
   color: @text-secondary;
   padding: 16px 0;
 }
+
 .infinite-empty {
   text-align: center;
   color: @text-secondary;
   padding: 32px 0;
 }
+
 .observer-anchor {
   height: 1px;
   pointer-events: none;
 }
 </style>
-

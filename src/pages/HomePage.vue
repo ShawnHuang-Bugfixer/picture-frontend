@@ -8,7 +8,9 @@
           从首页直接发起图片增强、老照片修复、视频超分与案例检索。平台保留现有后端能力，但以前端新骨架重建任务入口、协作路径和结果体验。
         </p>
         <div class="landing-actions">
-          <a-button type="primary" size="large" @click="$router.push('/add_picture')">发起超分任务</a-button>
+          <a-button type="primary" size="large" @click="$router.push('/my_space')"
+            >发起超分任务</a-button
+          >
           <a-button size="large" @click="$router.push('/search_picture')">浏览案例展厅</a-button>
           <a-button size="large" @click="$router.push('/my_space')">进入人工作空间</a-button>
         </div>
@@ -37,7 +39,7 @@
             <div class="composer-input">
               <PlusOutlined />
               <span>上传图片、视频，或直接进入批量任务提交</span>
-              <a-button type="primary" @click="$router.push('/add_picture')">开始</a-button>
+              <a-button type="primary" @click="$router.push('/my_space')">开始</a-button>
             </div>
             <div class="app-metric-grid">
               <div class="app-metric">
@@ -46,7 +48,9 @@
               </div>
               <div class="app-metric">
                 <div class="app-metric__label">当前分类</div>
-                <div class="app-metric__value metric-small">{{ selectedCategory === 'all' ? '全部' : selectedCategory }}</div>
+                <div class="app-metric__value metric-small">
+                  {{ selectedCategory === 'all' ? '全部' : selectedCategory }}
+                </div>
               </div>
             </div>
           </div>
@@ -67,7 +71,9 @@
       <div class="panel-head">
         <div>
           <h3 class="app-section-title">超分案例展厅</h3>
-          <p class="app-section-desc">保留原公共内容接口，将公开素材重新组织为案例流与精选成果展示。</p>
+          <p class="app-section-desc">
+            保留原公共内容接口，将公开素材重新组织为案例流与精选成果展示。
+          </p>
         </div>
       </div>
       <div class="filter-search">
@@ -109,7 +115,11 @@
       <PictureList :dataList="dataList" :showOp="false">
         <template #renderItem="{ item }">
           <a-list-item style="padding: 0">
-            <a-card class="case-card" hoverable @click="$router.push({ path: `/picture/${item.id}` })">
+            <a-card
+              class="case-card"
+              hoverable
+              @click="$router.push({ path: `/picture/${item.id}` })"
+            >
               <template #cover>
                 <img :alt="item.name" :src="item.thumbnailUrl ?? item.url" class="case-cover" />
               </template>
@@ -242,11 +252,14 @@ onMounted(() => {
   getTagCategoryOptions()
   fetchData()
 
-  const observer = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      fetchData()
-    }
-  }, { rootMargin: '100px' })
+  const observer = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        fetchData()
+      }
+    },
+    { rootMargin: '100px' },
+  )
 
   if (loadMoreTrigger.value) {
     observer.observe(loadMoreTrigger.value)
@@ -339,8 +352,7 @@ onMounted(() => {
   height: 100%;
   padding: 18px;
   border-radius: @border-radius-lg;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 26%),
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 26%),
     linear-gradient(180deg, #fff 0%, #f8fafc 100%);
 }
 

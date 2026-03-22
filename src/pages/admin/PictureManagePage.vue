@@ -6,7 +6,6 @@
         <p class="app-page__subtitle">审核公开素材、维护案例内容，并对图片类数据做统一治理。</p>
       </div>
       <div class="app-page__actions">
-        <a-button type="primary" href="/add_picture" target="_blank">发起单个任务</a-button>
         <a-button href="/add_picture/batch" target="_blank">批量任务提交</a-button>
       </div>
     </section>
@@ -14,7 +13,11 @@
     <section class="app-filter-bar">
       <a-form layout="inline" :model="searchParams" @finish="doSearch">
         <a-form-item label="关键词">
-          <a-input v-model:value="searchParams.searchText" placeholder="搜索标题或简介" allow-clear />
+          <a-input
+            v-model:value="searchParams.searchText"
+            placeholder="搜索标题或简介"
+            allow-clear
+          />
         </a-form-item>
         <a-form-item label="分类">
           <a-input v-model:value="searchParams.category" placeholder="输入分类" allow-clear />
@@ -44,7 +47,12 @@
     </section>
 
     <section class="app-table-card">
-      <a-table :columns="columns" :data-source="dataList" :pagination="pagination" @change="doTableChange">
+      <a-table
+        :columns="columns"
+        :data-source="dataList"
+        :pagination="pagination"
+        @change="doTableChange"
+      >
         <template #bodyCell="{ column, record }">
           <template v-if="column.dataIndex === 'url'">
             <a-image :src="record.url" :width="120" />
@@ -92,7 +100,9 @@
               >
                 拒绝
               </a-button>
-              <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank">编辑</a-button>
+              <a-button type="link" :href="`/add_picture?id=${record.id}`" target="_blank"
+                >编辑</a-button
+              >
               <a-button danger @click="doDelete(record.id)">删除</a-button>
             </a-space>
           </template>

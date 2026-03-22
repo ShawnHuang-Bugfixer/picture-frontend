@@ -63,16 +63,12 @@
         <div>
           <h3 class="app-section-title">素材列表</h3>
           <p class="app-section-desc">
-            保留现有搜索、颜色检索和分页逻辑，并直接接入空间内的超分任务入口。
+            仅保留关键词、分类和标签三类常用查询条件，并直接接入空间内的超分任务入口。
           </p>
         </div>
         <a-progress type="circle" :size="46" :percent="spaceUsagePercentNumber" />
       </div>
       <PictureSearchForm :onSearch="onSearch" />
-      <div class="color-filter">
-        <span class="color-filter__label">按颜色搜索</span>
-        <color-picker format="hex" @pureColorChange="onColorChange" />
-      </div>
     </section>
 
     <section class="app-card panel-card">
@@ -115,12 +111,7 @@ import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-
 import { message } from 'ant-design-vue'
 import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { ColorPicker } from 'vue3-colorpicker'
-import 'vue3-colorpicker/style.css'
-import {
-  listPictureVoByPageUsingPost,
-  searchPictureByColorUsingPost,
-} from '@/api/pictureController.ts'
+import { listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { getSrTaskVoByIdUsingGet } from '@/api/srTaskController.ts'
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
@@ -276,21 +267,6 @@ const onSearch = (newSearchParams: API.PictureQueryRequest) => {
     current: 1,
   }
   fetchData()
-}
-
-const onColorChange = async (color: string) => {
-  loading.value = true
-  const res = await searchPictureByColorUsingPost({
-    picColor: color,
-    spaceId: props.id as any,
-  })
-  if (res.data.code === 0 && res.data.data) {
-    dataList.value = res.data.data ?? []
-    total.value = dataList.value.length
-  } else {
-    message.error(`按颜色搜索失败，${res.data.message || '请稍后重试'}`)
-  }
-  loading.value = false
 }
 
 const stopSrTaskPolling = (taskId: string, closeMessage = true) => {
@@ -449,18 +425,6 @@ watch(
 
 .metric-label {
   font-size: 22px;
-}
-
-.color-filter {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.color-filter__label {
-  color: #64748b;
-  font-size: 14px;
 }
 
 @media (max-width: 768px) {

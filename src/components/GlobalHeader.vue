@@ -89,13 +89,12 @@ const doLogout = async () => {
   justify-content: space-between;
   gap: 24px;
   align-items: flex-start;
-  margin-bottom: 18px;
-  padding: 18px 22px;
+  padding: 16px 20px;
   border: 1px solid @border-color;
-  border-radius: @border-radius-xl;
+  border-radius: @border-radius-lg;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: @shadow-sm;
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(12px);
 }
 
 .header-copy {
@@ -104,22 +103,25 @@ const doLogout = async () => {
 
 .header-scene {
   margin: 0 0 8px;
-  color: @accent-color;
-  font-size: 13px;
-  font-weight: 600;
+  color: @text-secondary;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .header-title {
   margin: 0;
-  font-size: 30px;
-  line-height: 1.15;
-  letter-spacing: -0.03em;
+  font-size: 24px;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
 }
 
 .header-subtitle {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: @text-secondary;
   font-size: 14px;
+  line-height: 1.7;
 }
 
 .header-actions {
@@ -131,12 +133,18 @@ const doLogout = async () => {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-width: 188px;
-  padding: 8px 12px;
+  min-width: 204px;
+  padding: 9px 13px;
   border: 1px solid @border-color;
   border-radius: @border-radius-pill;
-  background: @card-bg;
+  background: #fff;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.profile-pill:hover {
+  border-color: @border-strong;
+  box-shadow: @shadow-sm;
 }
 
 .profile-text {

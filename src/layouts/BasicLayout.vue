@@ -29,15 +29,16 @@ const isAuthShell = computed(() => route.meta?.shell === 'auth')
 #basicLayout {
   display: flex;
   min-height: 100vh;
+  padding: 12px;
+  gap: 12px;
 }
 
 .layout-sidebar {
   position: sticky;
-  top: 0;
-  height: 100vh;
-  width: 292px;
-  flex: 0 0 292px;
-  padding: 16px;
+  top: 12px;
+  height: calc(100vh - 24px);
+  width: 256px;
+  flex: 0 0 256px;
 }
 
 .layout-main {
@@ -45,19 +46,22 @@ const isAuthShell = computed(() => route.meta?.shell === 'auth')
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 18px 22px 26px 6px;
+  gap: 12px;
 }
 
 .layout-content {
   flex: 1;
   min-height: 0;
+  padding: 4px 4px 20px;
 }
 
 .is-auth-shell {
   display: block;
+  padding: 0;
 }
 
 .is-auth-shell .layout-main {
+  min-height: 100vh;
   padding: 28px;
 }
 
@@ -67,7 +71,11 @@ const isAuthShell = computed(() => route.meta?.shell === 'auth')
   }
 
   .layout-main {
-    padding: 16px;
+    gap: 12px;
+  }
+
+  .layout-content {
+    padding: 4px 0 18px;
   }
 }
 </style>

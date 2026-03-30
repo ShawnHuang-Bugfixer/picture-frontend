@@ -83,17 +83,17 @@ const handleSubmit = async (values: API.UserLoginRequest) => {
 }
 
 .auth-eyebrow {
-  color: @accent-color;
+  color: @text-secondary;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
 .auth-title {
   margin: 18px 0 0;
   max-width: 560px;
-  font-size: 42px;
+  font-size: 44px;
   line-height: 1.1;
   letter-spacing: -0.04em;
 }
@@ -107,31 +107,36 @@ const handleSubmit = async (values: API.UserLoginRequest) => {
 }
 
 .auth-points {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+  max-width: 560px;
 }
 
 .auth-point {
-  padding: 10px 14px;
-  border: 1px solid @border-color;
-  border-radius: @border-radius-pill;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: @border-radius-md;
   background: rgba(255, 255, 255, 0.7);
+  color: @text-color;
+  backdrop-filter: blur(8px);
 }
 
 .form-head {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .form-title {
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
+  letter-spacing: -0.03em;
 }
 
 .form-desc {
   margin: 8px 0 0;
   color: @text-secondary;
+  line-height: 1.7;
 }
 
 .form-link-row {
@@ -140,5 +145,30 @@ const handleSubmit = async (values: API.UserLoginRequest) => {
   margin-bottom: 18px;
   color: @text-secondary;
   font-size: 14px;
+}
+
+:deep(.ant-form-item) {
+  margin-bottom: 18px;
+}
+
+:deep(.ant-input),
+:deep(.ant-input-password) {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+:deep(.ant-btn-primary) {
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .auth-title {
+    font-size: 36px;
+  }
+
+  .auth-points {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

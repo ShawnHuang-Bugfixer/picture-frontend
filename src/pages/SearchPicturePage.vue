@@ -15,7 +15,7 @@
 
     <template v-if="isPictureSearchMode">
       <section class="search-grid">
-        <div class="app-card source-card">
+        <div class="app-surface-card source-card">
           <div class="card-head">
             <h3 class="app-section-title">检索源素材</h3>
             <p class="app-section-desc">以当前素材为锚点，查找视觉特征接近的案例结果。</p>
@@ -38,7 +38,7 @@
           </a-card>
         </div>
 
-        <div class="app-card result-card">
+        <div class="app-surface-card result-card">
           <div class="card-head">
             <h3 class="app-section-title">相似案例</h3>
             <p class="app-section-desc">结果复用现有相似检索接口，保持按图搜图链路不变。</p>
@@ -65,7 +65,7 @@
     </template>
 
     <template v-else>
-      <section class="app-card gallery-filter-card">
+      <section class="app-surface-card gallery-filter-card">
         <div class="card-head">
           <h3 class="app-section-title">公开案例列表</h3>
           <p class="app-section-desc">
@@ -76,12 +76,11 @@
           v-model:value="gallerySearchParams.searchText"
           placeholder="搜索案例名称或简介"
           enter-button="搜索"
-          size="large"
           @search="doGallerySearch"
         />
       </section>
 
-      <section class="app-card gallery-card">
+      <section class="app-surface-card gallery-card">
         <a-list
           :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }"
           :data-source="galleryResultList"

@@ -8,7 +8,11 @@
           从首页直接发起图片增强、老照片修复、视频超分与案例检索。平台保留现有后端能力，但以前端新骨架重建任务入口、协作路径和结果体验。
         </p>
         <div class="landing-actions">
-          <a-button type="primary" size="large" @click="$router.push('/my_space')"
+          <a-button
+            class="landing-actions__primary"
+            type="primary"
+            @click="$router.push('/my_space')"
+          >
             >发起超分任务</a-button
           >
           <a-button size="large" @click="$router.push('/search_picture')">浏览案例展厅</a-button>
@@ -67,8 +71,8 @@
       </article>
     </section>
 
-    <section class="app-card filter-panel">
-      <div class="panel-head">
+    <section class="app-surface-card filter-panel">
+      <div class="app-panel-head panel-head">
         <div>
           <h3 class="app-section-title">超分案例展厅</h3>
           <p class="app-section-desc">
@@ -104,8 +108,8 @@
       </div>
     </section>
 
-    <section class="app-card gallery-panel">
-      <div class="panel-head">
+    <section class="app-surface-card gallery-panel">
+      <div class="app-panel-head panel-head">
         <div>
           <h3 class="app-section-title">精选案例</h3>
           <p class="app-section-desc">支持无感滚动浏览，保留既有公共素材流量和详情页跳转逻辑。</p>
@@ -271,51 +275,53 @@ onMounted(() => {
 @import '@/styles/variables.less';
 
 #homePage {
-  gap: 22px;
+  gap: 24px;
 }
 
 .landing-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.8fr);
+  gap: 22px;
 }
 
 .landing-copy,
 .composer-card,
-.scene-card,
-.filter-panel,
-.gallery-panel {
-  border: 1px solid @border-color;
-  border-radius: @border-radius-xl;
-  background: rgba(255, 255, 255, 0.88);
+.scene-card {
+  border-radius: @border-radius-lg;
   box-shadow: @shadow-lg;
 }
 
 .landing-copy {
-  padding: 40px;
+  padding: 42px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 24%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(251, 251, 252, 0.92) 100%);
+  backdrop-filter: blur(16px);
 }
 
 .landing-badge {
   display: inline-flex;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: @border-radius-pill;
-  background: @accent-soft;
+  background: rgba(37, 99, 235, 0.1);
   color: @accent-color;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 .landing-title {
   margin: 18px 0 0;
-  max-width: 720px;
-  font-size: 48px;
-  line-height: 1.08;
+  max-width: 760px;
+  font-size: 56px;
+  line-height: 1.02;
   letter-spacing: -0.04em;
 }
 
 .landing-desc {
-  margin: 18px 0 0;
-  max-width: 640px;
+  margin: 20px 0 0;
+  max-width: 620px;
   color: @text-secondary;
   font-size: 16px;
   line-height: 1.8;
@@ -325,35 +331,49 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 28px;
+  margin-top: 32px;
+}
+
+.landing-actions__primary {
+  min-width: 180px;
 }
 
 .landing-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 24px;
+  margin-top: 26px;
 }
 
 .landing-chip {
-  padding: 10px 16px;
-  border: 1px solid @border-color;
+  padding: 9px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: @border-radius-pill;
-  background: #fff;
-  color: @text-color;
+  background: rgba(255, 255, 255, 0.82);
+  color: @text-secondary;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.landing-chip:hover {
+  border-color: rgba(37, 99, 235, 0.24);
+  color: @text-color;
 }
 
 .composer-card {
-  padding: 20px;
+  padding: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(251, 251, 252, 0.88) 100%);
+  backdrop-filter: blur(16px);
 }
 
 .composer-window {
   height: 100%;
-  padding: 18px;
-  border-radius: @border-radius-lg;
-  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 26%),
-    linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  padding: 20px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: @border-radius-md;
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(247, 247, 248, 0.82) 100%);
 }
 
 .composer-toolbar {
@@ -365,7 +385,7 @@ onMounted(() => {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #d5d9e0;
+  background: rgba(107, 114, 128, 0.26);
 }
 
 .composer-body {
@@ -377,7 +397,8 @@ onMounted(() => {
 
 .composer-label {
   margin: 0;
-  font-size: 24px;
+  color: @text-color;
+  font-size: 28px;
   font-weight: 600;
   line-height: 1.3;
 }
@@ -386,10 +407,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 18px;
-  border: 1px solid @border-color;
-  border-radius: @border-radius-pill;
-  background: #fff;
+  padding: 16px 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: @border-radius-md;
+  background: rgba(255, 255, 255, 0.8);
   color: @text-secondary;
 }
 
@@ -400,11 +421,14 @@ onMounted(() => {
 .scene-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
 .scene-card {
   padding: 24px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84) 0%, rgba(251, 251, 252, 0.9) 100%);
+  backdrop-filter: blur(12px);
 }
 
 .scene-card__eyebrow {
@@ -419,6 +443,7 @@ onMounted(() => {
 .scene-card h3 {
   margin: 0;
   font-size: 24px;
+  letter-spacing: -0.02em;
 }
 
 .scene-card p {
@@ -428,13 +453,10 @@ onMounted(() => {
 
 .filter-panel,
 .gallery-panel {
-  padding: 24px;
+  padding: 26px;
 }
 
 .panel-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 18px;
 }
 
@@ -447,25 +469,35 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
 }
 
 .tag-label {
   color: @text-secondary;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .case-card {
   overflow: hidden;
-  border: none;
-  border-radius: @border-radius-lg;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: @border-radius-md;
   box-shadow: none;
-  background: @card-bg-soft;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(251, 251, 252, 0.92) 100%);
+  transition: 0.2s ease;
+}
+
+.case-card:hover {
+  transform: translateY(-2px);
+  box-shadow: @shadow-md;
 }
 
 .case-cover {
   display: block;
   width: 100%;
-  height: 200px;
+  height: 220px;
   object-fit: cover;
 }
 
@@ -482,7 +514,7 @@ onMounted(() => {
 .case-category {
   color: @accent-color;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -513,13 +545,13 @@ onMounted(() => {
   }
 
   .landing-title {
-    font-size: 38px;
+    font-size: 40px;
   }
 
   .composer-input {
     align-items: flex-start;
     flex-direction: column;
-    border-radius: @border-radius-lg;
+    border-radius: @border-radius-md;
   }
 }
 </style>

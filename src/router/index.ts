@@ -6,6 +6,7 @@ const UserLoginPage = () => import('@/pages/user/UserLoginPage.vue')
 const UserRegisterPage = () => import('@/pages/user/UserRegisterPage.vue')
 const UserManagePage = () => import('@/pages/admin/UserManagePage.vue')
 const AddPicturePage = () => import('@/pages/AddPicturePage.vue')
+const UploadCasePage = () => import('@/pages/UploadCasePage.vue')
 const PictureManagePage = () => import('@/pages/admin/PictureManagePage.vue')
 const PictureDetailPage = () => import('@/pages/PictureDetailPage.vue')
 const AddPictureBatchPage = () => import('@/pages/AddPictureBatchPage.vue')
@@ -116,6 +117,18 @@ const routes: RouteRecordRaw[] = [
       subtitle: '提交图片或视频素材，配置模型与执行参数。',
       navGroup: 'core',
       scene: 'personalWorkspace',
+      shell: 'workspace',
+    },
+  },
+  {
+    path: '/upload_case',
+    name: '上传超分案例',
+    component: UploadCasePage,
+    meta: {
+      title: '上传超分案例',
+      subtitle: '上传图片或视频素材，完善案例信息，并发布到超分案例展厅。',
+      navGroup: 'core',
+      scene: 'caseGallery',
       shell: 'workspace',
     },
   },

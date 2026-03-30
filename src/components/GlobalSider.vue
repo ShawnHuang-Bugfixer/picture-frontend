@@ -122,7 +122,7 @@ const primaryItems = [
 
 const trailingItems = [
   { key: '/search_picture', label: '超分案例展厅', icon: AppstoreOutlined },
-  { key: '/add_picture', label: '发起超分任务', icon: DatabaseOutlined },
+  { key: '/upload_case', label: '上传超分案例', icon: DatabaseOutlined },
 ]
 
 const adminItems = [
@@ -205,16 +205,22 @@ onMounted(() => {
   flex-direction: column;
   gap: 14px;
   height: 100%;
+  padding: 16px;
+  border: 1px solid @sidebar-border;
+  border-radius: @border-radius-xl;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(251, 251, 252, 0.82) 100%);
+  box-shadow: @shadow-md;
+  color: @text-color;
+  backdrop-filter: blur(18px);
 }
 
 .brand-card,
 .nav-card,
 .status-card {
-  border: 1px solid @border-color;
-  border-radius: @border-radius-xl;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: @shadow-sm;
-  backdrop-filter: blur(16px);
+  border: 1px solid @sidebar-border;
+  border-radius: @border-radius-lg;
+  background: @sidebar-surface;
+  backdrop-filter: blur(10px);
 }
 
 .brand-card {
@@ -229,15 +235,16 @@ onMounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #202123 0%, #4b5563 100%);
   color: #ffffff;
   font-size: 16px;
   font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .brand-overline {
   margin: 2px 0 4px;
-  color: @accent-color;
+  color: @text-secondary;
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -248,6 +255,7 @@ onMounted(() => {
   margin: 0;
   font-size: 22px;
   line-height: 1.2;
+  color: @text-color;
 }
 
 .brand-desc {
@@ -258,7 +266,7 @@ onMounted(() => {
 }
 
 .nav-card {
-  padding: 18px 14px 14px;
+  padding: 16px 12px 12px;
 }
 
 .nav-section-title {
@@ -278,7 +286,8 @@ onMounted(() => {
   width: 100%;
   margin-bottom: 6px;
   padding: 12px 14px;
-  border-radius: 16px;
+  border: 1px solid transparent;
+  border-radius: 14px;
   color: @text-color;
   transition: 0.2s ease;
 }
@@ -293,8 +302,9 @@ onMounted(() => {
 .nav-link:hover,
 .nav-link.active,
 .team-group__item.active {
-  background: @card-bg-soft;
-  color: @primary-color;
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: @text-color;
 }
 
 .team-group {
@@ -322,8 +332,8 @@ onMounted(() => {
   padding: 10px 12px;
   border: 1px dashed @border-strong;
   border-radius: 14px;
-  background: #fff;
-  color: @primary-color;
+  background: rgba(255, 255, 255, 0.92);
+  color: @text-color;
   cursor: pointer;
   font-size: 18px;
   font-weight: 600;
@@ -343,8 +353,8 @@ onMounted(() => {
 }
 
 .team-group__item:hover {
-  background: @card-bg-soft;
-  color: @primary-color;
+  background: rgba(255, 255, 255, 0.88);
+  color: @text-color;
 }
 
 .team-group__item-name {
@@ -380,5 +390,6 @@ onMounted(() => {
   margin: 10px 0 0;
   font-size: 14px;
   line-height: 1.7;
+  color: @text-color;
 }
 </style>

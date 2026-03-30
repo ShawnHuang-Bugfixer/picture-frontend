@@ -3,16 +3,50 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">工作空间管理</h2>
-        <p class="app-page__subtitle">统一管理人工作空间、团队协作空间与容量使用情况。</p>
+        <p class="app-page__subtitle">
+          统一管理个人工作空间、团队协作空间与容量使用情况，快速定位异常空间与高频使用区域。
+        </p>
       </div>
       <div class="app-page__actions">
-        <a-button href="/space_analyze?queryPublic=1" target="_blank">案例展厅分析</a-button>
-        <a-button href="/space_analyze?queryAll=1" target="_blank">全局空间分析</a-button>
+        <a-button href="/space_analyze?queryPublic=1" target="_blank">展厅分析</a-button>
+        <a-button href="/space_analyze?queryAll=1" target="_blank">全局分析</a-button>
       </div>
     </section>
 
-    <section class="app-filter-bar">
-      <a-form layout="inline" :model="searchParams" @finish="doSearch">
+    <section class="stats-grid">
+      <article class="app-metric">
+        <div class="app-metric__label">当前结果数</div>
+        <div class="app-metric__value">{{ total }}</div>
+      </article>
+      <article class="app-metric">
+        <div class="app-metric__label">查询规格</div>
+        <div class="app-metric__value metric-small">
+          {{ searchParams.spaceLevel ? SPACE_LEVEL_MAP[searchParams.spaceLevel] : '全部' }}
+        </div>
+      </article>
+      <article class="app-metric">
+        <div class="app-metric__label">查询类型</div>
+        <div class="app-metric__value metric-small">
+          {{ searchParams.spaceType ? SPACE_TYPE_MAP[searchParams.spaceType] : '全部' }}
+        </div>
+      </article>
+      <article class="app-metric">
+        <div class="app-metric__label">页容量</div>
+        <div class="app-metric__value">{{ searchParams.pageSize }}</div>
+      </article>
+    </section>
+
+    <section class="app-surface-card control-panel">
+      <div class="app-panel-head control-panel__head">
+        <div>
+          <h3 class="app-section-title">筛选与检索</h3>
+          <p class="app-section-desc">
+            按空间名称、规格、类型和用户 ID 快速筛选，保持后台控制台的信息密度。
+          </p>
+        </div>
+      </div>
+
+      <a-form class="control-form" layout="inline" :model="searchParams" @finish="doSearch">
         <a-form-item label="空间名称">
           <a-input v-model:value="searchParams.spaceName" placeholder="输入空间名称" allow-clear />
         </a-form-item>
@@ -41,29 +75,49 @@
             style="width: 180px"
           />
         </a-form-item>
-        <a-form-item>
+        <a-form-item class="control-form__submit">
           <a-button type="primary" html-type="submit">搜索</a-button>
         </a-form-item>
       </a-form>
     </section>
 
     <section class="app-table-card">
+      <div class="table-head">
+        <div>
+          <h3 class="app-section-title">空间列表</h3>
+          <p class="app-section-desc">
+            查看容量、数量、归属用户与最近编辑时间，并从这里进入分析或编辑流程。
+          </p>
+        </div>
+      </div>
+
       <a-table
         :columns="columns"
         :data-source="dataList"
         :pagination="pagination"
+        :scroll="{ x: 1200 }"
         @change="doTableChange"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.dataIndex === 'spaceLevel'">
+          <template v-if="column.dataIndex === 'spaceName'">
+            <div class="space-name-cell">
+              <span class="space-name-cell__name">{{
+                record.spaceName || `空间 ${record.id}`
+              }}</span>
+              <span class="space-name-cell__meta">ID {{ record.id }}</span>
+            </div>
+          </template>
+          <template v-else-if="column.dataIndex === 'spaceLevel'">
             {{ SPACE_LEVEL_MAP[record.spaceLevel] }}
           </template>
           <template v-else-if="column.dataIndex === 'spaceType'">
             <a-tag>{{ SPACE_TYPE_MAP[record.spaceType] }}</a-tag>
           </template>
           <template v-else-if="column.dataIndex === 'spaceUseInfo'">
-            <div>容量：{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
-            <div>数量：{{ record.totalCount }} / {{ record.maxCount }}</div>
+            <div class="usage-cell">
+              <div>容量：{{ formatSize(record.totalSize) }} / {{ formatSize(record.maxSize) }}</div>
+              <div>数量：{{ record.totalCount }} / {{ record.maxCount }}</div>
+            </div>
           </template>
           <template v-else-if="column.dataIndex === 'createTime'">
             {{ dayjs(record.createTime).format('YYYY-MM-DD HH:mm:ss') }}
@@ -73,12 +127,12 @@
           </template>
           <template v-else-if="column.key === 'action'">
             <a-space wrap>
-              <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank"
-                >分析</a-button
-              >
-              <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank"
-                >编辑</a-button
-              >
+              <a-button type="link" :href="`/space_analyze?spaceId=${record.id}`" target="_blank">
+                分析
+              </a-button>
+              <a-button type="link" :href="`/add_space?id=${record.id}`" target="_blank">
+                编辑
+              </a-button>
               <a-button danger @click="doDelete(record.id)">删除</a-button>
             </a-space>
           </template>
@@ -102,15 +156,14 @@ import {
 import { formatSize } from '@/utils'
 
 const columns = [
-  { title: 'ID', dataIndex: 'id', width: 80 },
-  { title: '空间名称', dataIndex: 'spaceName' },
-  { title: '空间规格', dataIndex: 'spaceLevel' },
-  { title: '空间类型', dataIndex: 'spaceType' },
-  { title: '使用情况', dataIndex: 'spaceUseInfo' },
-  { title: '用户 ID', dataIndex: 'userId', width: 90 },
-  { title: '创建时间', dataIndex: 'createTime' },
-  { title: '更新时间', dataIndex: 'editTime' },
-  { title: '操作', key: 'action' },
+  { title: '空间', dataIndex: 'spaceName', width: 240 },
+  { title: '规格', dataIndex: 'spaceLevel', width: 120 },
+  { title: '类型', dataIndex: 'spaceType', width: 120 },
+  { title: '使用情况', dataIndex: 'spaceUseInfo', width: 240 },
+  { title: '用户 ID', dataIndex: 'userId', width: 100 },
+  { title: '创建时间', dataIndex: 'createTime', width: 180 },
+  { title: '更新时间', dataIndex: 'editTime', width: 180 },
+  { title: '操作', key: 'action', width: 180, fixed: 'right' as const },
 ]
 
 const dataList = ref<API.Space[]>([])
@@ -169,3 +222,82 @@ const doDelete = async (id: string | number) => {
   message.error('删除失败')
 }
 </script>
+
+<style scoped lang="less">
+@import '@/styles/variables.less';
+
+#spaceManagePage {
+  gap: 22px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-small {
+  font-size: 22px;
+}
+
+.control-panel {
+  padding: 26px;
+}
+
+.control-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 0;
+  margin-top: 18px;
+}
+
+.control-form__submit {
+  margin-left: auto;
+}
+
+.table-head {
+  margin-bottom: 18px;
+}
+
+.space-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.space-name-cell__name {
+  font-weight: 600;
+}
+
+.space-name-cell__meta,
+.usage-cell {
+  color: @text-secondary;
+}
+
+.usage-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 960px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .control-panel {
+    padding: 22px;
+  }
+
+  .control-form__submit {
+    margin-left: 0;
+  }
+}
+</style>

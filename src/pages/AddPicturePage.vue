@@ -86,9 +86,7 @@
     <section v-if="picture?.id && !isGalleryUploadMode" class="app-card tool-card">
       <div class="card-head">
         <h3 class="app-section-title">后续处理</h3>
-        <p class="app-section-desc">
-          上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。
-        </p>
+        <p class="app-section-desc">上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。</p>
       </div>
       <div class="tool-actions">
         <a-button @click="doEditPicture">裁剪素材</a-button>
@@ -150,7 +148,12 @@
           />
         </a-form-item>
         <a-form-item name="tags" label="标签">
-          <a-select v-model:value="pictureForm.tags" mode="tags" :options="tagOptions" allow-clear />
+          <a-select
+            v-model:value="pictureForm.tags"
+            mode="tags"
+            :options="tagOptions"
+            allow-clear
+          />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%">保存</a-button>
@@ -208,7 +211,9 @@ const resolvedSpaceId = computed(() => normalizeQueryValue(route.query?.spaceId)
 const pictureId = computed(() => normalizeQueryValue(route.query?.id))
 const sourceSpaceId = computed(() => normalizeQueryValue(route.query?.sourceSpaceId))
 const isGalleryUploadMode = computed(() => normalizeQueryValue(route.query?.galleryUpload) === '1')
-const showBackToResultCenter = computed(() => isGalleryUploadMode.value && Boolean(sourceSpaceId.value))
+const showBackToResultCenter = computed(
+  () => isGalleryUploadMode.value && Boolean(sourceSpaceId.value),
+)
 
 const pageTitle = computed(() => {
   if (isGalleryUploadMode.value) {

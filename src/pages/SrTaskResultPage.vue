@@ -85,7 +85,8 @@
                   <div><span class="label">输出 Key：</span>{{ item.outputFileKey || '-' }}</div>
                   <div><span class="label">Trace ID：</span>{{ item.traceId || '-' }}</div>
                   <div>
-                    <span class="label">完成时间：</span>{{ item.updateTime || item.createTime || '-' }}
+                    <span class="label">完成时间：</span
+                    >{{ item.updateTime || item.createTime || '-' }}
                   </div>
                   <div v-if="isTeamSpace">
                     <span class="label">创建者：</span>{{ item.userId ?? '-' }}
@@ -283,7 +284,7 @@ const resetSearch = () => {
 }
 
 const goToGalleryUpload = () => {
-  router.push(`/add_picture?galleryUpload=1&uploadType=file&from=sr_result&sourceSpaceId=${props.id}`)
+  router.push(`/upload_case?uploadType=file&from=sr_result&sourceSpaceId=${props.id}`)
 }
 
 const backToSpace = () => {

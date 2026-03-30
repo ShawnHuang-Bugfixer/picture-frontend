@@ -29,7 +29,11 @@
             { min: 8, message: '密码长度不能小于 8 位' },
           ]"
         >
-          <a-input-password v-model:value="formState.userPassword" placeholder="密码" autocomplete="new-password" />
+          <a-input-password
+            v-model:value="formState.userPassword"
+            placeholder="密码"
+            autocomplete="new-password"
+          />
         </a-form-item>
         <a-form-item
           name="checkPassword"
@@ -39,7 +43,11 @@
             { validator: validateCheckPassword, trigger: 'blur' },
           ]"
         >
-          <a-input-password v-model:value="formState.checkPassword" placeholder="确认密码" autocomplete="new-password" />
+          <a-input-password
+            v-model:value="formState.checkPassword"
+            placeholder="确认密码"
+            autocomplete="new-password"
+          />
         </a-form-item>
         <a-form-item
           name="email"
@@ -50,7 +58,9 @@
         >
           <div class="email-row">
             <a-input v-model:value="formState.email" placeholder="邮箱" />
-            <a-button @click="handleSendCode" :disabled="codeBtnDisabled">{{ codeBtnText }}</a-button>
+            <a-button @click="handleSendCode" :disabled="codeBtnDisabled">{{
+              codeBtnText
+            }}</a-button>
           </div>
         </a-form-item>
         <a-form-item name="code" :rules="[{ required: true, message: '请输入验证码' }]">
@@ -200,7 +210,7 @@ const handleSendCode = async () => {
 }
 
 .auth-eyebrow {
-  color: @accent-color;
+  color: @text-secondary;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -210,7 +220,7 @@ const handleSendCode = async () => {
 .auth-title {
   margin: 18px 0 0;
   max-width: 560px;
-  font-size: 42px;
+  font-size: 44px;
   line-height: 1.1;
   letter-spacing: -0.04em;
 }
@@ -224,31 +234,36 @@ const handleSendCode = async () => {
 }
 
 .auth-points {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 32px;
+  max-width: 560px;
 }
 
 .auth-point {
-  padding: 10px 14px;
-  border: 1px solid @border-color;
-  border-radius: @border-radius-pill;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: @border-radius-md;
   background: rgba(255, 255, 255, 0.7);
+  color: @text-color;
+  backdrop-filter: blur(8px);
 }
 
 .form-head {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .form-title {
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
+  letter-spacing: -0.03em;
 }
 
 .form-desc {
   margin: 8px 0 0;
   color: @text-secondary;
+  line-height: 1.7;
 }
 
 .email-row {
@@ -263,5 +278,21 @@ const handleSendCode = async () => {
   margin-bottom: 18px;
   color: @text-secondary;
   font-size: 14px;
+}
+
+:deep(.ant-input),
+:deep(.ant-input-password),
+:deep(.ant-input-search) {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+@media (max-width: 960px) {
+  .auth-title {
+    font-size: 36px;
+  }
+
+  .auth-points {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

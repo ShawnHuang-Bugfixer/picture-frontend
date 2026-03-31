@@ -59,44 +59,62 @@
         >
           <template #renderItem="{ item }">
             <a-list-item>
-              <a-card hoverable class="result-card">
-                <video
-                  v-if="isVideoResult(item)"
-                  :src="item.outputUrl"
-                  controls
-                  class="result-preview"
-                />
-                <a-image v-else :src="item.outputUrl" alt="sr-result" class="result-preview" />
+              <MediaCard
+                class="result-card"
+                :interactive="true"
+                :eyebrow="getSrBizTypeText(item.bizType)"
+                :title="item.taskNo || '超分结果'"
+                :subtitle="item.modelName || '未记录模型名称'"
+              >
+                <template #preview>
+                  <MediaPreview
+                    :src="item.outputUrl"
+                    :alt="item.taskNo || '超分结果'"
+                    :is-video="isVideoResult(item)"
+                    :controls="isVideoResult(item)"
+                    :muted="false"
+                    :interactive="true"
+                    :show-overlay="isVideoResult(item)"
+                  />
+                </template>
 
-                <div class="meta">
-                  <div class="meta-row">
-                    <a-tag color="blue">{{ getSrBizTypeText(item.bizType) }}</a-tag>
-                    <a-tag>{{ item.modelName || '-' }}</a-tag>
+                <template #meta>
+                  <div class="meta">
+                    <div class="meta-row">
+                      <a-tag color="blue">{{ getSrBizTypeText(item.bizType) }}</a-tag>
+                      <a-tag>{{ item.modelName || '-' }}</a-tag>
+                    </div>
+                    <div><span class="label">输出格式：</span>{{ item.outputFormat || '-' }}</div>
+                    <div>
+                      <span class="label">输出尺寸：</span>{{ formatOutputDimensions(item) }}
+                    </div>
+                    <div>
+                      <span class="label">文件大小：</span>{{ formatSize(item.outputSize) }}
+                    </div>
+                    <div><span class="label">耗时：</span>{{ formatDuration(item.costMs) }}</div>
+                    <div v-if="isVideoResult(item)">
+                      <span class="label">视频信息：</span>{{ formatVideoMetrics(item) }}
+                    </div>
+                    <div><span class="label">尝试次数：</span>{{ item.attempt ?? '-' }}</div>
+                    <div><span class="label">输出 Key：</span>{{ item.outputFileKey || '-' }}</div>
+                    <div><span class="label">Trace ID：</span>{{ item.traceId || '-' }}</div>
+                    <div>
+                      <span class="label">完成时间：</span
+                      >{{ item.updateTime || item.createTime || '-' }}
+                    </div>
+                    <div v-if="isTeamSpace">
+                      <span class="label">创建者：</span>{{ item.userId ?? '-' }}
+                    </div>
                   </div>
-                  <div><span class="label">任务号：</span>{{ item.taskNo || '-' }}</div>
-                  <div><span class="label">输出格式：</span>{{ item.outputFormat || '-' }}</div>
-                  <div><span class="label">输出尺寸：</span>{{ formatOutputDimensions(item) }}</div>
-                  <div><span class="label">文件大小：</span>{{ formatSize(item.outputSize) }}</div>
-                  <div><span class="label">耗时：</span>{{ formatDuration(item.costMs) }}</div>
-                  <div v-if="isVideoResult(item)">
-                    <span class="label">视频信息：</span>{{ formatVideoMetrics(item) }}
-                  </div>
-                  <div><span class="label">尝试次数：</span>{{ item.attempt ?? '-' }}</div>
-                  <div><span class="label">输出 Key：</span>{{ item.outputFileKey || '-' }}</div>
-                  <div><span class="label">Trace ID：</span>{{ item.traceId || '-' }}</div>
-                  <div>
-                    <span class="label">完成时间：</span
-                    >{{ item.updateTime || item.createTime || '-' }}
-                  </div>
-                  <div v-if="isTeamSpace">
-                    <span class="label">创建者：</span>{{ item.userId ?? '-' }}
-                  </div>
-                  <a-space style="margin-top: 8px">
-                    <a :href="item.outputUrl" target="_blank">查看原文件</a>
+                </template>
+
+                <template #actions>
+                  <a-space>
+                    <a :href="item.outputUrl" target="_blank">查看文件</a>
                     <a @click.prevent="doDownload(item)">下载</a>
                   </a-space>
-                </div>
-              </a-card>
+                </template>
+              </MediaCard>
             </a-list-item>
           </template>
         </a-list>
@@ -119,6 +137,8 @@
 import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import MediaCard from '@/components/media/MediaCard.vue'
+import MediaPreview from '@/components/media/MediaPreview.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import {
   listMySrTaskResultVoByPageUsingPost,
@@ -318,22 +338,18 @@ onMounted(async () => {
 </script>
 
 <style scoped lang="less">
+@import '@/styles/variables.less';
+
 .result-shell {
   padding: 24px;
 }
 
 .result-card {
-  overflow: hidden;
-}
-
-.result-preview {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
+  height: 100%;
 }
 
 .meta {
-  margin-top: 10px;
+  width: 100%;
   font-size: 13px;
   line-height: 1.8;
 }
@@ -346,6 +362,6 @@ onMounted(async () => {
 }
 
 .label {
-  color: #64748b;
+  color: @text-secondary;
 }
 </style>

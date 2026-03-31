@@ -9,8 +9,19 @@
       accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,video/x-matroska,video/x-msvideo,video/webm,video/x-m4v,.mp4,.mov,.mkv,.avi,.webm,.m4v"
     >
       <template v-if="picture?.url">
-        <video v-if="isVideoPicture" :src="picture.url" class="preview-media" controls />
-        <img v-else :src="picture.url" alt="preview" class="preview-media" />
+        <MediaPreview
+          :src="picture.url"
+          :thumbnail-src="picture.thumbnailUrl || picture.url"
+          :alt="picture.name || '上传预览'"
+          :is-video="isVideoPicture"
+          fit="contain"
+          ratio=""
+          :controls="isVideoPicture"
+          :muted="false"
+          :playsinline="true"
+          :show-overlay="false"
+          class="preview-media"
+        />
       </template>
       <div v-else class="upload-placeholder">
         <loading-outlined v-if="loading" />
@@ -28,6 +39,7 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons-vue'
 import type { UploadProps } from 'ant-design-vue'
 import { message } from 'ant-design-vue'
 import { uploadPictureUsingPost } from '@/api/pictureController.ts'
+import MediaPreview from '@/components/media/MediaPreview.vue'
 import { getOnceTokenUsingGet } from '@/api/userController.ts'
 
 interface Props {
@@ -129,8 +141,7 @@ const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
   min-height: 360px;
   border: 1px dashed @border-strong;
   border-radius: @border-radius-xl;
-  background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 25%),
+  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.1), transparent 25%),
     linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
@@ -158,10 +169,7 @@ const beforeUpload: UploadProps['beforeUpload'] = async (file) => {
 }
 
 .preview-media {
-  display: block;
   width: 100%;
-  max-height: 520px;
-  border-radius: @border-radius-lg;
-  object-fit: contain;
+  min-height: 520px;
 }
 </style>

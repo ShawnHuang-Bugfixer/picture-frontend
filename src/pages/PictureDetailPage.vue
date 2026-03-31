@@ -16,8 +16,19 @@
 
     <section class="detail-grid">
       <div class="app-card media-card">
-        <video v-if="isVideoPicture" :src="picture.url || ''" class="detail-media" controls />
-        <a-image v-else :src="picture.url || ''" class="detail-media" />
+        <MediaPreview
+          :src="picture.url || ''"
+          :thumbnail-src="picture.thumbnailUrl || picture.url || ''"
+          :alt="picture.name || '素材详情'"
+          :is-video="isVideoPicture"
+          fit="contain"
+          ratio=""
+          :controls="isVideoPicture"
+          :muted="false"
+          :playsinline="true"
+          :show-overlay="false"
+          class="detail-media"
+        />
       </div>
 
       <div class="app-card info-card">
@@ -71,6 +82,7 @@ import { useRouter } from 'vue-router'
 import { deletePictureUsingPost, getPictureVoByIdUsingGet } from '@/api/pictureController.ts'
 import { getLoginUserUsingGet, getPermissionsUsingPost } from '@/api/userController.ts'
 import ImageSuperResolution from '@/components/ImageSuperResolution.vue'
+import MediaPreview from '@/components/media/MediaPreview.vue'
 import ShareModal from '@/components/ShareModal.vue'
 import { isVideoMedia } from '@/constants/srTask.ts'
 import { SPACE_PERMISSION_ENUM } from '@/constants/space.ts'
@@ -239,9 +251,7 @@ const onSuperResolutionTaskCreated = () => {
 }
 
 .detail-media {
-  width: 100%;
-  max-height: 720px;
-  object-fit: contain;
+  min-height: 420px;
 }
 
 .color-chip {

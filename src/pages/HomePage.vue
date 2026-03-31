@@ -2,10 +2,11 @@
   <div id="homePage" class="app-page">
     <section class="landing-hero">
       <div class="landing-copy">
-        <span class="landing-badge">云端超分工作台</span>
-        <h2 class="landing-title">把图片与视频超分任务放进一个更轻、更快的工作流里。</h2>
+        <span class="landing-badge">Cloud AI Workspace</span>
+        <h2 class="landing-title">把图片与视频超分任务放进更快、更轻的工作流里。</h2>
         <p class="landing-desc">
-          从首页直接发起图片增强、老照片修复、视频超分与案例检索。平台保留现有后端能力，但以前端新骨架重建任务入口、协作路径和结果体验。
+          从首页直接发起图片增强、视频超分、案例浏览和批量任务。平台保留现有后端能力，
+          但用统一的前端工作台重新组织上传、处理、协作和展示体验。
         </p>
         <div class="landing-actions">
           <a-button
@@ -13,10 +14,10 @@
             type="primary"
             @click="$router.push('/my_space')"
           >
-            >发起超分任务</a-button
-          >
+            发起超分任务
+          </a-button>
           <a-button size="large" @click="$router.push('/search_picture')">浏览案例展厅</a-button>
-          <a-button size="large" @click="$router.push('/my_space')">进入人工作空间</a-button>
+          <a-button size="large" @click="$router.push('/my_space')">进入个人工作空间</a-button>
         </div>
         <div class="landing-chips">
           <button
@@ -42,7 +43,7 @@
             <p class="composer-label">今天准备处理什么素材？</p>
             <div class="composer-input">
               <PlusOutlined />
-              <span>上传图片、视频，或直接进入批量任务提交</span>
+              <span>上传图片、视频，或直接进入批量任务提交。</span>
               <a-button type="primary" @click="$router.push('/my_space')">开始</a-button>
             </div>
             <div class="app-metric-grid">
@@ -76,7 +77,7 @@
         <div>
           <h3 class="app-section-title">超分案例展厅</h3>
           <p class="app-section-desc">
-            保留原公共内容接口，将公开素材重新组织为案例流与精选成果展示。
+            保留公开素材接口，用统一的筛选与展示逻辑浏览当前可公开查看的案例。
           </p>
         </div>
       </div>
@@ -112,33 +113,15 @@
       <div class="app-panel-head panel-head">
         <div>
           <h3 class="app-section-title">精选案例</h3>
-          <p class="app-section-desc">支持无感滚动浏览，保留既有公共素材流量和详情页跳转逻辑。</p>
+          <p class="app-section-desc">
+            首页精选案例区与公开展厅列表共用同一套图片列表展示逻辑和交互。
+          </p>
         </div>
       </div>
 
-      <PictureList :dataList="dataList" :showOp="false">
-        <template #renderItem="{ item }">
-          <a-list-item style="padding: 0">
-            <a-card
-              class="case-card"
-              hoverable
-              @click="$router.push({ path: `/picture/${item.id}` })"
-            >
-              <template #cover>
-                <img :alt="item.name" :src="item.thumbnailUrl ?? item.url" class="case-cover" />
-              </template>
-              <div class="case-body">
-                <div class="case-meta">
-                  <span class="case-category">{{ item.category || '案例' }}</span>
-                  <span class="case-name">{{ item.name }}</span>
-                </div>
-              </div>
-            </a-card>
-          </a-list-item>
-        </template>
-      </PictureList>
+      <PictureList :dataList="dataList" :showOp="false" />
 
-      <div v-if="loading" class="load-status">案例加载中…</div>
+      <div v-if="loading" class="load-status">案例加载中...</div>
       <div v-else-if="finished" class="load-status">已经看到全部案例了</div>
       <div ref="loadMoreTrigger" class="load-trigger"></div>
     </section>
@@ -146,9 +129,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
+import { onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
@@ -165,22 +148,22 @@ const quickChips = [
 const sceneCards = [
   {
     eyebrow: '个人使用',
-    title: '人工作空间',
-    desc: '处理私有素材、管理任务参数、跟踪超分结果与下载记录。',
+    title: '个人工作空间',
+    desc: '处理私有素材、管理任务参数，并追踪超分结果与下载记录。',
     cta: '进入工作台',
     path: '/my_space',
   },
   {
     eyebrow: '多人协同',
     title: '团队协作空间',
-    desc: '面向协作者分工、成员权限、结果沉淀和内部交付链路。',
+    desc: '面向团队分工、成员权限、结果沉淀和协同交付场景。',
     cta: '创建协作空间',
     path: '/add_space?type=1',
   },
   {
     eyebrow: '公开展示',
     title: '超分案例展厅',
-    desc: '承接公开案例检索、成果浏览和对外展示场景。',
+    desc: '集中浏览公开案例、检索结果和对外展示内容。',
     cta: '浏览案例',
     path: '/search_picture',
   },
@@ -478,50 +461,6 @@ onMounted(() => {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.case-card {
-  overflow: hidden;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: @border-radius-md;
-  box-shadow: none;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(251, 251, 252, 0.92) 100%);
-  transition: 0.2s ease;
-}
-
-.case-card:hover {
-  transform: translateY(-2px);
-  box-shadow: @shadow-md;
-}
-
-.case-cover {
-  display: block;
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
-
-.case-body {
-  padding: 16px;
-}
-
-.case-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.case-category {
-  color: @accent-color;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.case-name {
-  font-size: 16px;
-  font-weight: 600;
 }
 
 .load-status {

@@ -1,100 +1,122 @@
 <template>
-  <div
-    class="picture-list"
-    ref="listRef"
-    :style="infinite ? 'height:60vh;overflow:auto;' : ''"
-  >
-    <a-list
-      :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4, xl: 5, xxl: 6 }"
-      :data-source="autoFetch ? pictures : dataList"
-      :loading="loading"
-    >
-      <template #renderItem="slotProps">
-        <slot name="renderItem" v-bind="slotProps">
-          <a-list-item style="padding: 0">
-            <a-card class="picture-card" hoverable @click="doClickPicture(slotProps.item)">
-              <template #cover>
-                <video
-                  v-if="isVideoItem(slotProps.item)"
-                  :src="slotProps.item.thumbnailUrl ?? slotProps.item.url"
-                  class="picture-img"
-                  muted
-                  playsinline
-                />
-                <img
-                  v-else
-                  :alt="slotProps.item.name"
-                  :src="slotProps.item.thumbnailUrl ?? slotProps.item.url"
-                  class="picture-img"
-                />
+  <div ref="listRef" class="picture-list" :style="infinite ? 'height:60vh;overflow:auto;' : ''">
+    <div class="picture-list__columns" :style="columnsStyle">
+      <div
+        v-for="(column, columnIndex) in masonryColumns"
+        :key="`column-${columnIndex}`"
+        class="picture-list__column"
+      >
+        <div
+          v-for="(item, itemIndex) in column"
+          :key="item.id ?? `${columnIndex}-${itemIndex}`"
+          class="picture-list__item"
+        >
+          <slot name="renderItem" :item="item">
+            <MediaMasonryCard
+              :src="item.thumbnailUrl ?? item.url"
+              :thumbnail-src="item.thumbnailUrl ?? item.url"
+              :alt="item.name || '素材预览'"
+              :title="item.name || '未命名素材'"
+              :subtitle="item.introduction || ''"
+              :eyebrow="isVideoItem(item) ? '视频素材' : '图片素材'"
+              :is-video="isVideoItem(item)"
+              :preview-width="item.picWidth"
+              :preview-height="item.picHeight"
+              :revealed="isCardRevealed(item.id)"
+              @card-click="handleCardClick(item)"
+            >
+              <template #meta>
+                <a-tag color="green">
+                  {{ item.category || '默认' }}
+                </a-tag>
+                <a-tag v-for="tag in item.tags || []" :key="tag">
+                  {{ tag }}
+                </a-tag>
+                <span v-if="showId && item.id" class="picture-card__id">
+                  ID:
+                  <a class="picture-card__id-link" @click.stop="copyId(item.id)">
+                    {{ item.id }}
+                  </a>
+                </span>
               </template>
-              <a-card-meta :title="slotProps.item.name">
-                <template #description>
-                  <a-flex>
-                    <a-tag color="green">
-                      {{ slotProps.item.category ?? '默认' }}
-                    </a-tag>
-                    <a-tag v-for="tag in slotProps.item.tags" :key="tag">
-                      {{ tag }}
-                    </a-tag>
-                  </a-flex>
-                  <div v-if="showId" style="color: #999; font-size: 12px; margin-top: 4px">
-                    ID:
-                    <a
-                      style="cursor: pointer; user-select: all"
-                      @click.stop="copyId(slotProps.item.id)"
-                    >
-                      {{ slotProps.item.id }}
-                    </a>
-                  </div>
-                </template>
-              </a-card-meta>
+
               <template v-if="showOp" #actions>
-                <ShareAltOutlined v-if="showShare" @click.stop="doShare(slotProps.item, $event)" />
-                <SearchOutlined
+                <a-button
+                  v-if="showShare"
+                  type="text"
+                  class="picture-card__action-btn"
+                  @click.stop="doShare(item, $event)"
+                >
+                  <template #icon><ShareAltOutlined /></template>
+                </a-button>
+                <a-button
                   v-if="showSearch"
-                  @click.stop="doSearch(slotProps.item, $event)"
-                />
-                <EditOutlined v-if="canEdit" @click.stop="doEdit(slotProps.item, $event)" />
-                <DeleteOutlined v-if="canDelete" @click.stop="doDelete(slotProps.item, $event)" />
-                <a
+                  type="text"
+                  class="picture-card__action-btn"
+                  @click.stop="doSearch(item, $event)"
+                >
+                  <template #icon><SearchOutlined /></template>
+                </a-button>
+                <a-button
+                  v-if="canEdit"
+                  type="text"
+                  class="picture-card__action-btn"
+                  @click.stop="doEdit(item, $event)"
+                >
+                  <template #icon><EditOutlined /></template>
+                </a-button>
+                <a-button
+                  v-if="canDelete"
+                  type="text"
+                  danger
+                  class="picture-card__action-btn"
+                  @click.stop="doDelete(item, $event)"
+                >
+                  <template #icon><DeleteOutlined /></template>
+                </a-button>
+                <a-button
                   v-if="showSuperResolution && onSuperResolution"
-                  style="color: #1677ff"
-                  @click.stop="doSuperResolution(slotProps.item, $event)"
+                  type="link"
+                  class="picture-card__cta"
+                  @click.stop="doSuperResolution(item, $event)"
                 >
                   AI超分
-                </a>
-                <a
+                </a-button>
+                <a-button
                   v-if="showId && onAppeal"
-                  style="color: #faad14"
-                  @click.stop="props.onAppeal?.(slotProps.item)"
+                  type="link"
+                  class="picture-card__cta picture-card__cta--warning"
+                  @click.stop="props.onAppeal?.(item)"
                 >
                   申诉
-                </a>
+                </a-button>
               </template>
-            </a-card>
-          </a-list-item>
-        </slot>
-      </template>
-    </a-list>
+            </MediaMasonryCard>
+          </slot>
+        </div>
+      </div>
+    </div>
+
     <div v-if="infinite && loading" class="infinite-loading">加载中...</div>
-    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">暂无图片</div>
+    <div v-if="infinite && finished && pictures.length === 0" class="infinite-empty">暂无素材</div>
     <div v-if="infinite" ref="observerAnchor" class="observer-anchor"></div>
   </div>
+  <ShareModal ref="shareModalRef" title="分享素材" :link="shareLink" />
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import {
   DeleteOutlined,
   EditOutlined,
   SearchOutlined,
   ShareAltOutlined,
 } from '@ant-design/icons-vue'
-import { deletePictureUsingPost, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { deletePictureUsingPost, listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import ShareModal from '@/components/ShareModal.vue'
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import MediaMasonryCard from '@/components/media/MediaMasonryCard.vue'
 
 interface Props {
   dataList?: API.PictureVO[]
@@ -116,6 +138,10 @@ interface Props {
   onAppeal?: (picture: API.PictureVO) => void
 }
 
+const MASONRY_GAP = 16
+const MASONRY_GAP_MOBILE = 12
+const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
+
 const props = withDefaults(defineProps<Props>(), {
   dataList: () => [],
   loading: false,
@@ -134,7 +160,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits(['loading-change'])
-const videoFormatSet = new Set(['mp4', 'mov', 'mkv', 'avi', 'webm', 'm4v'])
 
 const router = useRouter()
 const pictures = ref<API.PictureVO[]>([])
@@ -145,13 +170,86 @@ const total = ref(0)
 const pageSize = ref(20)
 const listRef = ref<HTMLElement | null>(null)
 const observerAnchor = ref<HTMLElement | null>(null)
+const shareModalRef = ref<{ openModal: () => void } | null>(null)
+const shareLink = ref('')
+const isTouchDevice = ref(false)
+const revealedCardId = ref<number | string | undefined>()
+const containerWidth = ref(0)
 let observer: IntersectionObserver | null = null
+let resizeObserver: ResizeObserver | null = null
 let lastLoadTime = 0
 const LOAD_INTERVAL = 500
+
+const displayList = computed(() => (props.autoFetch ? pictures.value : props.dataList))
+
+const currentGap = computed(() => (containerWidth.value <= 768 ? MASONRY_GAP_MOBILE : MASONRY_GAP))
+
+const columnCount = computed(() => {
+  if (containerWidth.value <= 520) return 1
+  if (containerWidth.value <= 768) return 2
+  if (containerWidth.value <= 1200) return 3
+  if (containerWidth.value <= 1440) return 4
+  return 5
+})
+
+const columnsStyle = computed(() => ({
+  gridTemplateColumns: `repeat(${columnCount.value}, minmax(0, 1fr))`,
+  gap: `${currentGap.value}px`,
+}))
+
+const estimateCardHeight = (item: API.PictureVO) => {
+  const width = Number(item.picWidth)
+  const height = Number(item.picHeight)
+  const ratioHeight = width > 0 && height > 0 ? height / width : 1.25
+  const infoWeight = props.showOp ? 0.42 : 0.26
+  return ratioHeight + infoWeight
+}
+
+const masonryColumns = computed(() => {
+  const columns: API.PictureVO[][] = Array.from({ length: columnCount.value }, () => [])
+  const heights = Array.from({ length: columnCount.value }, () => 0)
+
+  displayList.value.forEach((item) => {
+    let shortestColumnIndex = 0
+    for (let index = 1; index < heights.length; index += 1) {
+      if (heights[index] < heights[shortestColumnIndex]) {
+        shortestColumnIndex = index
+      }
+    }
+    columns[shortestColumnIndex].push(item)
+    heights[shortestColumnIndex] += estimateCardHeight(item)
+  })
+
+  return columns
+})
 
 watch(loading, (newVal) => {
   emit('loading-change', newVal)
 })
+
+const updateTouchMode = () => {
+  if (typeof window === 'undefined') return
+  isTouchDevice.value = window.matchMedia('(hover: none), (pointer: coarse)').matches
+  if (!isTouchDevice.value) {
+    revealedCardId.value = undefined
+  }
+}
+
+const updateContainerWidth = () => {
+  containerWidth.value = listRef.value?.getBoundingClientRect().width || 0
+}
+
+const collapseReveal = () => {
+  revealedCardId.value = undefined
+}
+
+const handleOutsidePointerDown = (event: PointerEvent) => {
+  const target = event.target as Node | null
+  if (!target || !listRef.value) return
+  if (!listRef.value.contains(target)) {
+    collapseReveal()
+  }
+}
 
 const fetchPictures = async (reset = false) => {
   const now = Date.now()
@@ -182,11 +280,7 @@ const fetchPictures = async (reset = false) => {
       } else {
         pictures.value = [...pictures.value, ...list]
       }
-      if (pictures.value.length >= total.value || list.length === 0) {
-        finished.value = true
-      } else {
-        finished.value = false
-      }
+      finished.value = pictures.value.length >= total.value || list.length === 0
     }
   } catch (error) {
     loading.value = false
@@ -231,7 +325,7 @@ const setupObserver = () => {
       {
         root: listRef.value,
         threshold: 0.1,
-        rootMargin: '0px 0px 200px 0px',
+        rootMargin: '0px 0px 240px 0px',
       },
     )
 
@@ -250,10 +344,21 @@ const resetObserver = () => {
 }
 
 onMounted(() => {
+  updateTouchMode()
+  updateContainerWidth()
   if (props.autoFetch && !props.infinite) fetchPictures(true)
   if (props.useObserver && props.infinite) {
     setupObserver()
   }
+  if ('ResizeObserver' in window && listRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      updateContainerWidth()
+    })
+    resizeObserver.observe(listRef.value)
+  }
+  window.addEventListener('resize', updateTouchMode)
+  document.addEventListener('pointerdown', handleOutsidePointerDown)
+  listRef.value?.addEventListener('scroll', collapseReveal, { passive: true })
 })
 
 onUnmounted(() => {
@@ -261,6 +366,11 @@ onUnmounted(() => {
     observer.disconnect()
     observer = null
   }
+  resizeObserver?.disconnect()
+  resizeObserver = null
+  window.removeEventListener('resize', updateTouchMode)
+  document.removeEventListener('pointerdown', handleOutsidePointerDown)
+  listRef.value?.removeEventListener('scroll', collapseReveal)
 })
 
 watch(
@@ -278,6 +388,14 @@ const doClickPicture = (picture: API.PictureVO) => {
   router.push({
     path: `/picture/${picture.id}`,
   })
+}
+
+const handleCardClick = (picture: API.PictureVO) => {
+  if (isTouchDevice.value && revealedCardId.value !== picture.id) {
+    revealedCardId.value = picture.id
+    return
+  }
+  doClickPicture(picture)
 }
 
 const doSearch = (picture: API.PictureVO, e: Event) => {
@@ -320,14 +438,14 @@ const isVideoItem = (picture: API.PictureVO) => {
   return videoFormatSet.has(format)
 }
 
-const shareModalRef = ref()
-const shareLink = ref<string>()
+const isCardRevealed = (id?: number | string) => {
+  return isTouchDevice.value && revealedCardId.value === id
+}
+
 const doShare = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   shareLink.value = `${window.location.protocol}//${window.location.host}/picture/${picture.id}`
-  if (shareModalRef.value) {
-    shareModalRef.value.openModal()
-  }
+  shareModalRef.value?.openModal()
 }
 
 const copyId = (id: string | number) => {
@@ -365,38 +483,93 @@ defineExpose({
 <style scoped lang="less">
 @import '@/styles/variables.less';
 
-.picture-card {
-  background: @card-bg;
-  border-radius: @border-radius;
-  box-shadow: @shadow;
-  transition: box-shadow 0.2s;
-
-  &:hover {
-    box-shadow: 0 8px 32px 0 rgba(60, 72, 88, 0.16);
-  }
+.picture-list__columns {
+  display: grid;
+  align-items: start;
 }
 
-.picture-img {
-  border-radius: @border-radius;
-  object-fit: cover;
-  width: 100%;
-  height: 180px;
+.picture-list__column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.picture-card__id {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.picture-card__id-link {
+  color: #ffffff;
+  user-select: all;
+}
+
+.picture-card__action-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: @border-radius-pill;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.picture-card__action-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.picture-card__cta {
+  min-width: 0;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: @border-radius-pill;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.picture-card__cta:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.picture-card__cta--warning {
+  color: #ffe58f;
+}
+
+.picture-list :deep(.ant-tag) {
+  border: 0;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
 }
 
 .infinite-loading {
-  text-align: center;
-  color: @text-secondary;
   padding: 16px 0;
+  color: @text-secondary;
+  text-align: center;
 }
 
 .infinite-empty {
-  text-align: center;
-  color: @text-secondary;
   padding: 32px 0;
+  color: @text-secondary;
+  text-align: center;
 }
 
 .observer-anchor {
   height: 1px;
   pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .picture-list__column {
+    gap: 12px;
+  }
+
+  .picture-card__action-btn,
+  .picture-card__cta {
+    height: 34px;
+  }
 }
 </style>

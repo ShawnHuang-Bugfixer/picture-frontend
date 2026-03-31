@@ -2,12 +2,12 @@
   <div id="searchPicturePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">{{ isPictureSearchMode ? '案例检索' : '超分任务展厅' }}</h2>
+        <h2 class="app-page__title">{{ isPictureSearchMode ? '案例检索' : '超分案例展厅' }}</h2>
         <p class="app-page__subtitle">
           {{
             isPictureSearchMode
               ? '围绕当前素材查找相似案例，用于参考风格、构图和超分处理效果。'
-              : '复用原首页公开素材列表接口，集中浏览当前可公开查看的图片与视频案例。'
+              : '集中浏览当前可公开查看的图片与视频案例，并统一复用共享图片列表展示逻辑。'
           }}
         </p>
       </div>
@@ -18,7 +18,7 @@
         <div class="app-surface-card source-card">
           <div class="card-head">
             <h3 class="app-section-title">检索源素材</h3>
-            <p class="app-section-desc">以当前素材为锚点，查找视觉特征接近的案例结果。</p>
+            <p class="app-section-desc">以当前素材为锚点，查找视觉特征相近的案例结果。</p>
           </div>
           <a-card hoverable>
             <template #cover>
@@ -41,7 +41,7 @@
         <div class="app-surface-card result-card">
           <div class="card-head">
             <h3 class="app-section-title">相似案例</h3>
-            <p class="app-section-desc">结果复用现有相似检索接口，保持按图搜图链路不变。</p>
+            <p class="app-section-desc">结果继续复用现有相似检索接口，保持按图搜图链路不变。</p>
           </div>
           <a-list
             :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3 }"
@@ -68,9 +68,7 @@
       <section class="app-surface-card gallery-filter-card">
         <div class="card-head">
           <h3 class="app-section-title">公开案例列表</h3>
-          <p class="app-section-desc">
-            沿用原首页公开素材列表调用方式，仅保留搜索和浏览能力，不展示标签信息。
-          </p>
+          <p class="app-section-desc">保留搜索入口，公开展厅列表统一使用共享图片列表展示逻辑。</p>
         </div>
         <a-input-search
           v-model:value="gallerySearchParams.searchText"
@@ -81,39 +79,7 @@
       </section>
 
       <section class="app-surface-card gallery-card">
-        <a-list
-          :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }"
-          :data-source="galleryResultList"
-          :loading="loading"
-        >
-          <template #renderItem="{ item }">
-            <a-list-item style="padding: 0">
-              <a-card hoverable class="gallery-item-card" @click="goToPictureDetail(item.id)">
-                <template #cover>
-                  <video
-                    v-if="isVideoMedia(item.picFormat)"
-                    :src="item.thumbnailUrl ?? item.url"
-                    class="gallery-cover"
-                    muted
-                    playsinline
-                  />
-                  <img
-                    v-else
-                    :alt="item.name"
-                    :src="item.thumbnailUrl ?? item.url"
-                    class="gallery-cover"
-                  />
-                </template>
-                <div class="gallery-item-body">
-                  <div class="gallery-item-name">{{ item.name || '未命名素材' }}</div>
-                  <div class="gallery-item-introduction">
-                    {{ item.introduction || '暂无简介' }}
-                  </div>
-                </div>
-              </a-card>
-            </a-list-item>
-          </template>
-        </a-list>
+        <PictureList :dataList="galleryResultList" :loading="loading" :showOp="false" />
 
         <a-empty v-if="!loading && galleryResultList.length === 0" description="暂无公开案例" />
         <div v-if="loading" class="load-status">案例加载中...</div>
@@ -129,16 +95,16 @@
 <script setup lang="ts">
 import { message } from 'ant-design-vue'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import {
   getPictureVoByIdUsingGet,
   listPictureVoByPageUsingPost,
   searchPictureByPictureUsingPost,
 } from '@/api/pictureController.ts'
+import PictureList from '@/components/PictureList.vue'
 import { isVideoMedia } from '@/constants/srTask.ts'
 
 const route = useRoute()
-const router = useRouter()
 
 const picture = ref<API.PictureVO>({})
 const similarResultList = ref<API.ImageSearchResult[]>([])
@@ -281,13 +247,6 @@ const setupGalleryObserver = () => {
   galleryObserver.observe(galleryLoadMoreTrigger.value)
 }
 
-const goToPictureDetail = (id?: number) => {
-  if (!id) {
-    return
-  }
-  router.push(`/picture/${id}`)
-}
-
 const loadCurrentModeData = async () => {
   if (isPictureSearchMode.value) {
     resetGallerySearch()
@@ -342,36 +301,15 @@ onBeforeUnmount(() => {
 }
 
 .source-image,
-.result-image,
-.gallery-cover {
+.result-image {
   display: block;
   width: 100%;
   height: 220px;
   object-fit: cover;
 }
 
-.result-item-card,
-.gallery-item-card {
+.result-item-card {
   overflow: hidden;
-}
-
-.gallery-item-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 16px;
-}
-
-.gallery-item-name {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-.gallery-item-introduction {
-  color: #64748b;
-  font-size: 13px;
-  line-height: 1.7;
 }
 
 .load-status {

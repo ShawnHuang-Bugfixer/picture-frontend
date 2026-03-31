@@ -35,9 +35,12 @@ export interface SrTaskResultVO {
   taskId?: string | number
   taskNo?: string
   userId?: string | number
+  spaceId?: string | number
   bizType?: string
   modelName?: string
   modelVersion?: string
+  inputFileKey?: string
+  inputFileUrl?: string
   outputFileKey?: string
   outputUrl?: string
   outputFormat?: string

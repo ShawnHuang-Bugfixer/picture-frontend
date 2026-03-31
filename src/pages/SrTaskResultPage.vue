@@ -109,7 +109,10 @@
                 </template>
 
                 <template #actions>
-                  <a-space>
+                  <a-space wrap>
+                    <a v-if="canCompareResult(item)" @click.prevent="openCompareModal(item)">
+                      对比结果
+                    </a>
                     <a :href="item.outputUrl" target="_blank">查看文件</a>
                     <a @click.prevent="doDownload(item)">下载</a>
                   </a-space>
@@ -130,6 +133,14 @@
         @change="fetchData"
       />
     </section>
+
+    <CompareImageModal
+      :open="compareModalOpen"
+      :before-image-url="currentCompareItem?.inputFileUrl"
+      :after-image-url="currentCompareItem?.outputUrl"
+      :title="currentCompareItem?.taskNo ? `${currentCompareItem.taskNo} 对比结果` : '超分结果对比'"
+      @close="closeCompareModal"
+    />
   </div>
 </template>
 
@@ -137,6 +148,7 @@
 import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import CompareImageModal from '@/components/CompareImageModal.vue'
 import MediaCard from '@/components/media/MediaCard.vue'
 import MediaPreview from '@/components/media/MediaPreview.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
@@ -163,6 +175,9 @@ const dataList = ref<SrTaskResultVO[]>([])
 const space = ref<API.SpaceVO>({})
 const permissionList = ref<string[]>([])
 const loginUser = ref<API.LoginUserVO>()
+const compareModalOpen = ref(false)
+const currentCompareItem = ref<SrTaskResultVO | null>(null)
+
 const bizTypeOptions = [
   { label: '全部', value: undefined },
   { label: '图片', value: 'image' },
@@ -191,6 +206,20 @@ const isVideoResult = (item: SrTaskResultVO) => {
     return true
   }
   return isVideoMedia(item.outputFormat)
+}
+
+const canCompareResult = (item: SrTaskResultVO) => {
+  return item.bizType === 'image' && !!item.inputFileUrl && !!item.outputUrl
+}
+
+const openCompareModal = (item: SrTaskResultVO) => {
+  currentCompareItem.value = item
+  compareModalOpen.value = true
+}
+
+const closeCompareModal = () => {
+  compareModalOpen.value = false
+  currentCompareItem.value = null
 }
 
 const formatOutputDimensions = (item: SrTaskResultVO) => {

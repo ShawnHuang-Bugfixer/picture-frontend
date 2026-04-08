@@ -135,10 +135,11 @@
       />
     </section>
 
-    <CompareImageModal
+    <CompareMediaModal
       :open="compareModalOpen"
-      :before-image-url="currentCompareItem?.inputFileUrl"
-      :after-image-url="currentCompareItem?.outputUrl"
+      :before-url="currentCompareItem?.inputFileUrl"
+      :after-url="currentCompareItem?.outputUrl"
+      :media-type="currentCompareMediaType"
       :title="currentCompareItem?.taskNo ? `${currentCompareItem.taskNo} 对比结果` : '超分结果对比'"
       @close="closeCompareModal"
     />
@@ -149,7 +150,7 @@
 import { message } from 'ant-design-vue'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import CompareImageModal from '@/components/CompareImageModal.vue'
+import CompareMediaModal from '@/components/CompareMediaModal.vue'
 import MediaCard from '@/components/media/MediaCard.vue'
 import MediaPreview from '@/components/media/MediaPreview.vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
@@ -178,6 +179,9 @@ const permissionList = ref<string[]>([])
 const loginUser = ref<API.LoginUserVO>()
 const compareModalOpen = ref(false)
 const currentCompareItem = ref<SrTaskResultVO | null>(null)
+const currentCompareMediaType = computed<'image' | 'video'>(() =>
+  currentCompareItem.value && isVideoResult(currentCompareItem.value) ? 'video' : 'image',
+)
 
 const bizTypeOptions = [
   { label: '全部', value: undefined },
@@ -210,7 +214,7 @@ const isVideoResult = (item: SrTaskResultVO) => {
 }
 
 const canCompareResult = (item: SrTaskResultVO) => {
-  return item.bizType === 'image' && !!item.inputFileUrl && !!item.outputUrl
+  return !!item.inputFileUrl && !!item.outputUrl
 }
 
 const openCompareModal = (item: SrTaskResultVO) => {

@@ -71,10 +71,11 @@
                     :src="item.outputUrl"
                     :alt="item.taskNo || '超分结果'"
                     :is-video="isVideoResult(item)"
-                    :controls="isVideoResult(item)"
-                    :muted="false"
+                    :video-preview-mode="'player'"
+                    :controls="false"
+                    :muted="true"
                     :interactive="true"
-                    :show-overlay="isVideoResult(item)"
+                    :show-overlay="false"
                   />
                 </template>
 

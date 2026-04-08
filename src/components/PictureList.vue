@@ -13,13 +13,14 @@
         >
           <slot name="renderItem" :item="item">
             <MediaMasonryCard
-              :src="item.thumbnailUrl ?? item.url"
-              :thumbnail-src="item.thumbnailUrl ?? item.url"
+              :src="getPreviewSrc(item)"
+              :thumbnail-src="getThumbnailSrc(item)"
               :alt="item.name || '素材预览'"
               :title="item.name || '未命名素材'"
               :subtitle="item.introduction || ''"
               :eyebrow="isVideoItem(item) ? '视频素材' : '图片素材'"
               :is-video="isVideoItem(item)"
+              :video-preview-mode="videoPreviewMode"
               :preview-width="item.picWidth"
               :preview-height="item.picHeight"
               :revealed="isCardRevealed(item.id)"
@@ -134,6 +135,7 @@ interface Props {
   showSearch?: boolean
   showId?: boolean
   showSuperResolution?: boolean
+  videoPreviewMode?: 'player' | 'poster'
   onSuperResolution?: (picture: API.PictureVO) => void
   onAppeal?: (picture: API.PictureVO) => void
 }
@@ -155,6 +157,7 @@ const props = withDefaults(defineProps<Props>(), {
   showSearch: true,
   showId: false,
   showSuperResolution: false,
+  videoPreviewMode: 'player',
   onSuperResolution: undefined,
   onAppeal: undefined,
 })
@@ -431,6 +434,17 @@ const doDelete = async (picture: API.PictureVO, e: Event) => {
 const doSuperResolution = (picture: API.PictureVO, e: Event) => {
   e.stopPropagation()
   props.onSuperResolution?.(picture)
+}
+
+const getThumbnailSrc = (picture: API.PictureVO) => {
+  return picture.thumbnailUrl || ''
+}
+
+const getPreviewSrc = (picture: API.PictureVO) => {
+  if (isVideoItem(picture)) {
+    return picture.url || ''
+  }
+  return picture.thumbnailUrl || picture.url || ''
 }
 
 const isVideoItem = (picture: API.PictureVO) => {

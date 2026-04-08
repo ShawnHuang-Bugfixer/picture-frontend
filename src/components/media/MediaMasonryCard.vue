@@ -13,6 +13,7 @@
         :thumbnail-src="thumbnailSrc"
         :alt="alt"
         :is-video="isVideo"
+        :video-preview-mode="videoPreviewMode"
         :ratio="previewRatio"
         radius="none"
         :interactive="true"
@@ -51,6 +52,7 @@ interface Props {
   subtitle?: string
   eyebrow?: string
   isVideo?: boolean
+  videoPreviewMode?: 'player' | 'poster'
   previewWidth?: number | string
   previewHeight?: number | string
   revealed?: boolean
@@ -67,6 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
   subtitle: '',
   eyebrow: '',
   isVideo: false,
+  videoPreviewMode: 'player',
   previewWidth: undefined,
   previewHeight: undefined,
   revealed: false,

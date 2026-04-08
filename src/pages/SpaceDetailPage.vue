@@ -79,6 +79,7 @@
         :canEdit="canEditPicture"
         :canDelete="canDeletePicture"
         :showSuperResolution="canEditPicture"
+        videoPreviewMode="player"
         :onSuperResolution="openSuperResolutionModal"
         :onReload="fetchData"
       />

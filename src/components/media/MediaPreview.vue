@@ -9,15 +9,27 @@
     :style="previewStyle"
   >
     <video
-      v-if="isVideo"
+      v-if="isVideo && videoPreviewMode === 'player'"
       :src="src"
       :poster="thumbnailSrc"
       :controls="controls"
       :muted="muted"
+      :autoplay="shouldAutoplay"
+      :loop="shouldAutoplay"
       :playsinline="playsinline"
-      preload="metadata"
+      :preload="shouldAutoplay ? 'auto' : 'metadata'"
       class="media-preview__asset"
     />
+    <img
+      v-else-if="isVideo && posterSource"
+      :src="posterSource"
+      :alt="alt"
+      class="media-preview__asset"
+    />
+    <div v-else-if="isVideo" class="media-preview__placeholder">
+      <CaretRightFilled />
+      <span>{{ videoBadgeLabel }}</span>
+    </div>
     <img v-else :src="src" :alt="alt" class="media-preview__asset" />
     <div v-if="showOverlay" class="media-preview__overlay" />
     <div v-if="showVideoBadge && isVideo" class="media-preview__badge">
@@ -45,6 +57,7 @@ interface Props {
   controls?: boolean
   muted?: boolean
   playsinline?: boolean
+  videoPreviewMode?: 'player' | 'poster'
   interactive?: boolean
   showOverlay?: boolean
   showVideoBadge?: boolean
@@ -62,6 +75,7 @@ const props = withDefaults(defineProps<Props>(), {
   controls: false,
   muted: true,
   playsinline: true,
+  videoPreviewMode: 'player',
   interactive: false,
   showOverlay: false,
   showVideoBadge: true,
@@ -70,6 +84,15 @@ const props = withDefaults(defineProps<Props>(), {
 
 const previewStyle = computed(() => {
   return props.ratio ? { aspectRatio: props.ratio } : undefined
+})
+
+const shouldAutoplay = computed(() => {
+  return props.isVideo && props.videoPreviewMode === 'player' && !props.controls && props.muted
+})
+
+const posterSource = computed(() => {
+  const value = props.thumbnailSrc?.trim()
+  return value ? value : ''
 })
 </script>
 
@@ -108,6 +131,25 @@ const previewStyle = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.media-preview__placeholder {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 180px;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+  color: @text-secondary;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .media-preview--contain .media-preview__asset {

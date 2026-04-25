@@ -10,7 +10,7 @@
       <div class="app-page__actions">
         <a-button v-if="showBackToResultCenter" @click="backToResultCenter">返回结果中心</a-button>
         <a-button v-else-if="resolvedSpaceId" :href="`/space/${resolvedSpaceId}`" target="_blank">
-          返回工作空间
+          返回工作台
         </a-button>
       </div>
     </section>
@@ -42,12 +42,12 @@
         </div>
         <a-form name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
           <a-form-item name="name" label="名称">
-            <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
+            <a-input v-model:value="pictureForm.name" placeholder="给这份素材起个名字" allow-clear />
           </a-form-item>
           <a-form-item name="introduction" label="简介">
             <a-textarea
               v-model:value="pictureForm.introduction"
-              placeholder="请输入简介"
+              placeholder="简单说明这份素材要修复什么问题"
               :auto-size="{ minRows: 2, maxRows: 5 }"
               allow-clear
             />
@@ -55,7 +55,7 @@
           <a-form-item name="category" label="分类">
             <a-auto-complete
               v-model:value="pictureForm.category"
-              placeholder="请输入分类"
+              placeholder="例如 老照片、监控画面、动漫截图"
               :options="categoryOptions"
               allow-clear
             />
@@ -76,7 +76,7 @@
               style="width: 100%"
               :disabled="!picture?.id"
             >
-              保存信息
+              保存说明
             </a-button>
           </a-form-item>
         </a-form>
@@ -85,8 +85,8 @@
 
     <section v-if="picture?.id && !isGalleryUploadMode" class="app-card tool-card">
       <div class="card-head">
-        <h3 class="app-section-title">后续处理</h3>
-        <p class="app-section-desc">上传成功后即可继续裁剪、扩图，并直接提交图片或视频超分任务。</p>
+        <h3 class="app-section-title">继续处理</h3>
+        <p class="app-section-desc">上传成功后可以继续裁剪、扩图，或者直接提交图片和视频超分任务。</p>
       </div>
       <div class="tool-actions">
         <a-button @click="doEditPicture">裁剪素材</a-button>
@@ -118,7 +118,7 @@
 
     <a-modal
       v-model:open="showEditInfoModal"
-      title="素材信息"
+      title="素材说明"
       :footer="null"
       @cancel="showEditInfoModal = false"
     >
@@ -129,12 +129,12 @@
         @finish="handleSubmitModal"
       >
         <a-form-item name="name" label="名称">
-          <a-input v-model:value="pictureForm.name" placeholder="请输入名称" allow-clear />
+          <a-input v-model:value="pictureForm.name" placeholder="给这份素材起个名字" allow-clear />
         </a-form-item>
         <a-form-item name="introduction" label="简介">
           <a-textarea
             v-model:value="pictureForm.introduction"
-            placeholder="请输入简介"
+            placeholder="简单说明这份素材要修复什么问题"
             :auto-size="{ minRows: 2, maxRows: 5 }"
             allow-clear
           />
@@ -142,7 +142,7 @@
         <a-form-item name="category" label="分类">
           <a-auto-complete
             v-model:value="pictureForm.category"
-            placeholder="请输入分类"
+            placeholder="例如 老照片、监控画面、动漫截图"
             :options="categoryOptions"
             allow-clear
           />
@@ -217,32 +217,32 @@ const showBackToResultCenter = computed(
 
 const pageTitle = computed(() => {
   if (isGalleryUploadMode.value) {
-    return '上传至展厅'
+    return '发布到案例库'
   }
   return pictureId.value ? '编辑素材' : '发起超分任务'
 })
 
 const pageSubtitle = computed(() => {
   if (isGalleryUploadMode.value) {
-    return '复用现有素材上传页，选择本地图片上传到展厅，并完善名称、分类和标签信息。'
+    return '把修复前后的样例整理成案例，补充信息后发布到案例库。'
   }
-  return '在同一个页面里完成素材上传、基础信息编辑、裁剪、扩图和超分任务提交，减少在多个页面间来回切换。'
+  return '在同一个页面里完成素材上传、说明填写、裁剪、扩图和超分提交，减少来回切换。'
 })
 
-const uploadCardTitle = computed(() => (isGalleryUploadMode.value ? '展厅素材' : '任务素材'))
+const uploadCardTitle = computed(() => (isGalleryUploadMode.value ? '案例素材' : '任务素材'))
 const uploadCardDesc = computed(() => {
   if (isGalleryUploadMode.value) {
-    return '仅支持本地文件上传，上传后素材将进入展厅内容链路。'
+    return '仅支持本地文件上传，上传后可以继续补充案例说明和标签。'
   }
-  return '支持文件上传和 URL 导入，图片与视频会统一进入当前任务流。'
+  return '支持文件上传和 URL 导入，图片与视频都会进入当前处理流程。'
 })
 
-const infoCardTitle = computed(() => (isGalleryUploadMode.value ? '展厅信息' : '任务信息'))
+const infoCardTitle = computed(() => (isGalleryUploadMode.value ? '案例信息' : '任务说明'))
 const infoCardDesc = computed(() => {
   if (isGalleryUploadMode.value) {
-    return '补齐名称、简介、分类和标签，便于后续在展厅中检索和展示。'
+    return '补齐名称、简介、分类和标签，方便后续在案例库中检索和展示。'
   }
-  return '补齐名称、简介、分类和标签，便于后续检索、筛选和结果沉淀。'
+  return '补齐名称、简介、分类和标签，方便后续检索、筛选和整理结果。'
 })
 
 const onSuccess = (newPicture: API.PictureVO) => {
@@ -263,7 +263,7 @@ const handleSubmit = async () => {
     ...pictureForm,
   })
   if (res.data.code === 0 && res.data.data) {
-    message.success('保存成功')
+    message.success('素材说明已保存')
     router.push({
       path: `/picture/${picture.value.id}`,
     })

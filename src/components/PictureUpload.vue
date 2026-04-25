@@ -27,7 +27,7 @@
         <loading-outlined v-if="loading" />
         <plus-outlined v-else />
         <h4>拖拽或点击上传素材</h4>
-        <p>支持图片与视频，任务提交后可继续做裁剪、扩图和超分处理。</p>
+        <p>支持图片与视频，上传后可以继续裁剪、扩图和提交超分任务。</p>
       </div>
     </a-upload>
   </div>

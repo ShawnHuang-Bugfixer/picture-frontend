@@ -3,21 +3,21 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">{{ isEditMode ? '编辑' : '创建' }}{{ SPACE_TYPE_MAP[spaceType] }}</h2>
-        <p class="app-page__subtitle">为个人处理流或团队协作流创建独立工作空间，并选择容量规格。</p>
+        <p class="app-page__subtitle">为个人任务或团队协作创建独立工作台，并选择合适的容量规格。</p>
       </div>
     </section>
 
     <div class="space-grid">
       <section class="app-form-card">
         <a-form name="spaceForm" layout="vertical" :model="spaceForm" @finish="handleSubmit">
-          <a-form-item name="spaceName" label="空间名称">
-            <a-input v-model:value="spaceForm.spaceName" placeholder="请输入空间名称" allow-clear />
+          <a-form-item name="spaceName" label="工作台名称">
+            <a-input v-model:value="spaceForm.spaceName" placeholder="请输入工作台名称" allow-clear />
           </a-form-item>
-          <a-form-item name="spaceLevel" label="空间规格">
+          <a-form-item name="spaceLevel" label="工作台规格">
             <a-select
               v-model:value="spaceForm.spaceLevel"
               style="width: 100%"
-              placeholder="请选择空间规格"
+              placeholder="请选择工作台规格"
               :options="SPACE_LEVEL_OPTIONS"
               allow-clear
             />
@@ -31,8 +31,8 @@
       </section>
 
       <section class="app-card app-card--soft level-card">
-        <h3 class="app-section-title">空间规格说明</h3>
-        <p class="app-section-desc">可先使用标准版空间，后续再进入套餐升级页扩容。</p>
+        <h3 class="app-section-title">规格说明</h3>
+        <p class="app-section-desc">可以先从标准规格开始，后续再进入容量升级页扩展空间。</p>
         <div class="level-list">
           <div v-for="spaceLevel in spaceLevelList" :key="spaceLevel.value" class="level-item">
             <strong>{{ spaceLevel.text }}</strong>
@@ -92,7 +92,7 @@ const fetchSpaceLevelList = async () => {
     spaceLevelList.value = res.data.data
     return
   }
-  message.error('获取空间规格失败，' + res.data.message)
+  message.error('获取工作台规格失败，' + res.data.message)
 }
 
 const handleSubmit = async () => {

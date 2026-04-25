@@ -2,7 +2,7 @@
   <div id="spaceDetailPage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">{{ space.spaceName || '工作空间' }}</h2>
+        <h2 class="app-page__title">{{ space.spaceName || '工作台' }}</h2>
         <p class="app-page__subtitle">
           {{ spaceTypeTitle }}，在这里集中查看素材、权限、结果和协作动作。
         </p>
@@ -30,7 +30,7 @@
           :href="`/space_analyze?spaceId=${id}`"
           target="_blank"
         >
-          空间分析
+          工作台分析
         </a-button>
         <a-button v-if="canViewSrResult" @click="goToSrResultPage">结果中心</a-button>
         <a-button v-if="canEditPicture" :icon="h(EditOutlined)" @click="doBatchEdit"
@@ -41,7 +41,7 @@
 
     <section class="app-metric-grid">
       <div class="app-metric">
-        <div class="app-metric__label">空间类型</div>
+        <div class="app-metric__label">工作台类型</div>
         <div class="app-metric__value metric-label">{{ spaceTypeTitle }}</div>
       </div>
       <div class="app-metric">
@@ -63,7 +63,7 @@
         <div>
           <h3 class="app-section-title">素材列表</h3>
           <p class="app-section-desc">
-            仅保留关键词、分类和标签三类常用查询条件，并直接接入空间内的超分任务入口。
+            通过关键词、分类和标签快速筛选素材，并直接从这里发起新的超分任务。
           </p>
         </div>
         <a-progress type="circle" :size="46" :percent="spaceUsagePercentNumber" />
@@ -153,7 +153,7 @@ const imageSuperResolutionModalRef = ref()
 const currentSuperResolutionPicture = ref<API.PictureVO>()
 const srPollingTimerMap = new Map<string, ReturnType<typeof setInterval>>()
 
-const spaceTypeTitle = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
+const spaceTypeTitle = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作台')
 const spaceUsagePercentNumber = computed(() => {
   const maxSize = Number(space.value.maxSize || 0)
   const totalSize = Number(space.value.totalSize || 0)
@@ -233,10 +233,10 @@ const fetchSpaceDetail = async () => {
       space.value = res.data.data
       return
     }
-    message.error(`获取空间详情失败，${res.data.message || '请稍后重试'}`)
+    message.error(`获取工作台详情失败，${res.data.message || '请稍后重试'}`)
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '请稍后重试'
-    message.error(`获取空间详情失败，${errorMessage}`)
+    message.error(`获取工作台详情失败，${errorMessage}`)
   }
 }
 

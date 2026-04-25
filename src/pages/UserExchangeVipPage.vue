@@ -2,19 +2,19 @@
   <div id="vipExchangePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">套餐升级</h2>
-        <p class="app-page__subtitle">输入兑换码升级空间规格，继续扩容你的任务和结果处理能力。</p>
+        <h2 class="app-page__title">容量与规格升级</h2>
+        <p class="app-page__subtitle">输入兑换码升级工作台规格，继续扩容你的任务和结果处理能力。</p>
       </div>
     </section>
 
     <section class="app-form-card">
       <a-form name="formData" layout="vertical" :model="formData" @finish="handleSubmit">
         <a-form-item name="vipCode" label="兑换码">
-          <a-input v-model:value="formData.vipCode" placeholder="请输入会员兑换码" allow-clear />
+          <a-input v-model:value="formData.vipCode" placeholder="请输入兑换码" allow-clear />
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" style="width: 100%" :loading="loading">
-            立即兑换
+            立即升级
           </a-button>
         </a-form-item>
       </a-form>
@@ -47,15 +47,15 @@ const handleSubmit = async () => {
     })
 
     if (res.data.code === 0 && res.data.data) {
-      message.success('兑换成功')
+      message.success('升级成功')
       router.push({
         path: '/',
       })
       return
     }
-    message.error('兑换失败，' + res.data.message)
+    message.error('升级失败，' + res.data.message)
   } catch {
-    message.error('兑换失败，请稍后重试')
+    message.error('升级失败，请稍后重试')
   } finally {
     loading.value = false
   }

@@ -13,16 +13,14 @@
               {{ loginUserInitial }}
             </a-avatar>
             <div class="profile-text">
-              <span class="profile-name">{{
-                loginUserStore.loginUser.userName || '未登录用户'
-              }}</span>
+              <span class="profile-name">{{ loginUserStore.loginUser.userName || '游客' }}</span>
               <span class="profile-role">{{ roleLabel }}</span>
             </div>
           </div>
           <template #overlay>
             <a-menu>
               <a-menu-item @click="router.push('/user/profile')">账户中心</a-menu-item>
-              <a-menu-item @click="router.push('/user_exchange_vip')">套餐升级</a-menu-item>
+              <a-menu-item @click="router.push('/user_exchange_vip')">容量与规格升级</a-menu-item>
               <a-menu-item @click="doLogout">退出登录</a-menu-item>
             </a-menu>
           </template>
@@ -53,15 +51,13 @@ const webSocketStore = useWebSocketStore()
 const isAuthShell = computed(() => route.meta?.shell === 'auth')
 const pageTitle = computed(() => String(route.meta?.title || '云端超分'))
 const pageSubtitle = computed(() =>
-  String(route.meta?.subtitle || '统一处理素材、任务、结果与协作流程。'),
+  String(route.meta?.subtitle || '统一处理上传、修复、结果查看和团队协作。'),
 )
 const sceneLabel = computed(() => {
   const key = route.meta?.scene as keyof typeof SCENE_LABEL_MAP | undefined
-  return key ? SCENE_LABEL_MAP[key] : '工作台'
+  return key ? SCENE_LABEL_MAP[key] : '超分工作台'
 })
-const loginUserInitial = computed(() =>
-  String(loginUserStore.loginUser.userName || '云').slice(0, 1),
-)
+const loginUserInitial = computed(() => String(loginUserStore.loginUser.userName || '修').slice(0, 1))
 const roleLabel = computed(() =>
   loginUserStore.loginUser.userRole === 'admin' ? '平台管理员' : '工作台成员',
 )
@@ -71,7 +67,7 @@ const doLogout = async () => {
   if (res.data.code === 0) {
     webSocketStore.disconnect()
     loginUserStore.setLoginUser({
-      userName: '未登录',
+      userName: '游客',
     })
     message.success('已退出登录')
     await router.push('/user/login')

@@ -2,15 +2,15 @@
   <div id="spaceAnalyzePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">工作空间分析</h2>
+        <h2 class="app-page__title">工作台分析</h2>
         <p class="app-page__subtitle">
-          <span v-if="queryAll">查看全部工作空间的分析概况。</span>
-          <span v-else-if="queryPublic">查看案例展厅的整体分析数据。</span>
-          <span v-else>查看当前工作空间的容量、标签、分类与上传行为分析。</span>
+          <span v-if="queryAll">查看全部工作台的整体使用情况。</span>
+          <span v-else-if="queryPublic">查看案例库的整体使用情况。</span>
+          <span v-else>查看当前工作台的容量、标签、分类与上传行为分析。</span>
         </p>
       </div>
       <div class="app-page__actions" v-if="spaceId">
-        <a-button :href="`/space/${spaceId}`" target="_blank">返回工作空间</a-button>
+        <a-button :href="`/space/${spaceId}`" target="_blank">返回工作台</a-button>
       </div>
     </section>
 

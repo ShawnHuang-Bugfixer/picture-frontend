@@ -1,22 +1,22 @@
 <template>
   <div id="userLoginPage" class="app-auth-shell">
     <section class="app-auth-panel">
-      <span class="auth-eyebrow">Cloud AI Workspace</span>
-      <h1 class="auth-title">登录云端超分平台，继续你的任务与结果流。</h1>
+      <span class="auth-eyebrow">Super Resolution Workspace</span>
+      <h1 class="auth-title">回到你的超分工作台，继续处理待修复的图片和视频。</h1>
       <p class="auth-desc">
-        在同一个入口里处理图片增强、视频超分、案例浏览和团队协作。后端服务与权限逻辑保持不变，前端体验升级为更轻量的工作台结构。
+        在同一个入口里处理图片增强、视频超分、案例查看和团队协作。你登录后就能回到上一次的工作流，继续上传、处理和查看结果。
       </p>
       <div class="auth-points">
-        <div class="auth-point">统一任务入口</div>
-        <div class="auth-point">图片与视频超分</div>
-        <div class="auth-point">团队协作与结果沉淀</div>
+        <div class="auth-point">一个入口提交修复任务</div>
+        <div class="auth-point">图片与视频都能增强</div>
+        <div class="auth-point">结果和协作集中管理</div>
       </div>
     </section>
 
     <section class="app-auth-form">
       <div class="form-head">
         <h2 class="form-title">欢迎回来</h2>
-        <p class="form-desc">输入账号与密码，回到你的人工作空间。</p>
+        <p class="form-desc">输入账号和密码，回到你的个人工作台。</p>
       </div>
       <a-form :model="formState" name="loginForm" autocomplete="off" @finish="handleSubmit">
         <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">

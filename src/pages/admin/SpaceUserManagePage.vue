@@ -3,11 +3,11 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">协作成员管理</h2>
-        <p class="app-page__subtitle">为当前团队协作空间分配成员、调整角色，并移除不再参与的成员。</p>
+        <p class="app-page__subtitle">为当前团队工作台分配成员、调整分工，并移除不再参与的协作者。</p>
       </div>
       <div class="app-page__actions">
-        <a-button href="/space_analyze?queryPublic=1" target="_blank">案例展厅分析</a-button>
-        <a-button href="/space_analyze?queryAll=1" target="_blank">全局空间分析</a-button>
+        <a-button href="/space_analyze?queryPublic=1" target="_blank">案例库分析</a-button>
+        <a-button href="/space_analyze?queryAll=1" target="_blank">全局工作台分析</a-button>
       </div>
     </section>
 

@@ -29,7 +29,7 @@ const routes: RouteRecordRaw[] = [
     component: HomePage,
     meta: {
       title: '首页',
-      subtitle: '从统一入口发起任务、浏览案例并回到你的工作流。',
+      subtitle: '从这里上传低清图片或视频，开始修复任务、查看案例并回到你的处理流程。',
       navGroup: 'core',
       scene: 'home',
       shell: 'workspace',
@@ -41,7 +41,7 @@ const routes: RouteRecordRaw[] = [
     component: UserLoginPage,
     meta: {
       title: '登录',
-      subtitle: '登录云端超分平台，继续你的任务与协作流程。',
+      subtitle: '登录后继续处理图片增强、视频超分和团队协作任务。',
       navGroup: 'auth',
       scene: 'auth',
       shell: 'auth',
@@ -53,7 +53,7 @@ const routes: RouteRecordRaw[] = [
     component: UserRegisterPage,
     meta: {
       title: '注册',
-      subtitle: '创建账号，开始使用图片与视频超分辨率重构能力。',
+      subtitle: '创建账号后即可进入超分工作台，开始提交图片和视频修复任务。',
       navGroup: 'auth',
       scene: 'auth',
       shell: 'auth',
@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
     component: UserManagePage,
     meta: {
       title: '用户管理',
-      subtitle: '查看平台用户、角色分布与基础账户信息。',
+      subtitle: '查看平台成员、账户资料和角色分工，保持协作关系清晰。',
       navGroup: 'admin',
       scene: 'admin',
       shell: 'workspace',
@@ -77,7 +77,7 @@ const routes: RouteRecordRaw[] = [
     component: PictureManagePage,
     meta: {
       title: '素材管理',
-      subtitle: '审核素材、维护案例内容并处理平台内容治理事务。',
+      subtitle: '统一查看公开样例、筛选待处理内容，并维护案例库的展示质量。',
       navGroup: 'admin',
       scene: 'admin',
       shell: 'workspace',
@@ -85,11 +85,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin/spaceManage',
-    name: '工作空间管理',
+    name: '工作台管理',
     component: SpaceManagePage,
     meta: {
-      title: '工作空间管理',
-      subtitle: '管理人工工作空间、团队协作空间及其容量使用情况。',
+      title: '工作台管理',
+      subtitle: '查看个人与团队工作台的使用情况，快速定位高频协作区域。',
       navGroup: 'admin',
       scene: 'admin',
       shell: 'workspace',
@@ -102,7 +102,7 @@ const routes: RouteRecordRaw[] = [
     props: true,
     meta: {
       title: '协作成员管理',
-      subtitle: '配置团队成员角色与可执行权限。',
+      subtitle: '为团队工作台安排成员分工，确保任务交接和结果沉淀顺畅。',
       navGroup: 'admin',
       scene: 'teamWorkspace',
       shell: 'workspace',
@@ -114,7 +114,7 @@ const routes: RouteRecordRaw[] = [
     component: AddPicturePage,
     meta: {
       title: '发起超分任务',
-      subtitle: '提交图片或视频素材，配置模型与执行参数。',
+      subtitle: '上传待处理的图片或视频，补充说明后直接开始修复。',
       navGroup: 'core',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -126,7 +126,7 @@ const routes: RouteRecordRaw[] = [
     component: UploadCasePage,
     meta: {
       title: '上传超分案例',
-      subtitle: '上传图片或视频素材，完善案例信息，并发布到超分案例展厅。',
+      subtitle: '把处理前后的样例整理成案例，发布到案例库供后续参考。',
       navGroup: 'core',
       scene: 'caseGallery',
       shell: 'workspace',
@@ -138,7 +138,7 @@ const routes: RouteRecordRaw[] = [
     component: AddPictureBatchPage,
     meta: {
       title: '批量任务提交',
-      subtitle: '批量导入素材，统一提交超分任务。',
+      subtitle: '一次性导入多份图片素材，集中进入同一批修复流程。',
       navGroup: 'core',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -151,7 +151,7 @@ const routes: RouteRecordRaw[] = [
     props: true,
     meta: {
       title: '素材详情',
-      subtitle: '查看素材信息、下载、分享或继续后续处理。',
+      subtitle: '查看当前图片或视频的基本信息，并继续下载、分享或再次处理。',
       navGroup: 'core',
       scene: 'caseGallery',
       shell: 'workspace',
@@ -159,11 +159,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/add_space',
-    name: '创建工作空间',
+    name: '创建工作台',
     component: AddSpacePage,
     meta: {
-      title: '创建工作空间',
-      subtitle: '创建人工工作空间或团队协作空间并初始化容量配置。',
+      title: '创建工作台',
+      subtitle: '创建个人或团队工作台，为后续任务、结果和协作预留空间。',
       navGroup: 'core',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -171,11 +171,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/my_space',
-    name: '人工工作空间',
+    name: '个人工作台',
     component: MySpacePage,
     meta: {
-      title: '人工工作空间',
-      subtitle: '回到你的私有工作台，继续处理素材、任务与结果。',
+      title: '个人工作台',
+      subtitle: '回到你自己的处理区域，继续上传素材、提交任务和查看结果。',
       navGroup: 'core',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -183,12 +183,12 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/space/:id',
-    name: '工作空间详情',
+    name: '工作台详情',
     component: SpaceDetailPage,
     props: true,
     meta: {
-      title: '工作空间详情',
-      subtitle: '查看空间内的素材、任务结果、成员与分析信息。',
+      title: '工作台详情',
+      subtitle: '在这里集中查看素材、任务结果、成员分工和使用情况。',
       navGroup: 'core',
       scene: 'teamWorkspace',
       shell: 'workspace',
@@ -201,7 +201,7 @@ const routes: RouteRecordRaw[] = [
     props: true,
     meta: {
       title: '结果中心',
-      subtitle: '筛选、预览和下载当前工作空间的超分结果。',
+      subtitle: '筛选、预览并下载当前工作台里的修复结果，快速对比前后效果。',
       navGroup: 'core',
       scene: 'resultCenter',
       shell: 'workspace',
@@ -209,11 +209,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/space_analyze',
-    name: '工作空间分析',
+    name: '工作台分析',
     component: SpaceAnalyzePage,
     meta: {
-      title: '工作空间分析',
-      subtitle: '查看容量、分类、标签与使用趋势等多维分析。',
+      title: '工作台分析',
+      subtitle: '查看使用量、分类分布和协作趋势，帮助整理当前工作负载。',
       navGroup: 'admin',
       scene: 'admin',
       shell: 'workspace',
@@ -225,7 +225,7 @@ const routes: RouteRecordRaw[] = [
     component: SearchPicturePage,
     meta: {
       title: '案例检索',
-      subtitle: '按内容、颜色或结构筛选案例与素材。',
+      subtitle: '按内容风格和视觉特征查找相似案例，快速找到可参考的修复效果。',
       navGroup: 'core',
       scene: 'caseGallery',
       shell: 'workspace',
@@ -233,11 +233,11 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/user_exchange_vip',
-    name: '套餐升级',
+    name: '容量与规格升级',
     component: UserExchangeVipPage,
     meta: {
-      title: '套餐升级',
-      subtitle: '查看空间规格并升级当前使用方案。',
+      title: '容量与规格升级',
+      subtitle: '查看当前工作台可用容量，并扩展更大的处理空间。',
       navGroup: 'account',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -249,7 +249,7 @@ const routes: RouteRecordRaw[] = [
     component: UserProfilePage,
     meta: {
       title: '账户中心',
-      subtitle: '查看账号信息、内容治理状态和近期创作成果。',
+      subtitle: '查看账户资料、消息提醒、我的样例和近期处理记录。',
       navGroup: 'account',
       scene: 'personalWorkspace',
       shell: 'workspace',
@@ -261,7 +261,7 @@ const routes: RouteRecordRaw[] = [
     component: AboutView,
     meta: {
       title: '关于平台',
-      subtitle: '了解平台定位、能力边界与技术实现思路。',
+      subtitle: '快速了解平台能帮你做什么，以及它适合处理哪些图像修复场景。',
       navGroup: 'secondary',
       scene: 'home',
       shell: 'workspace',

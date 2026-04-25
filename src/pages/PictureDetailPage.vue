@@ -3,12 +3,12 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">素材详情</h2>
-        <p class="app-page__subtitle">查看素材信息、下载与分享，并直接发起后续的编辑或超分处理。</p>
+        <p class="app-page__subtitle">查看这份图片或视频的基本信息，并继续下载、分享或发起超分处理。</p>
       </div>
       <div class="app-page__actions">
         <a-button type="primary" @click="doDownload">下载素材</a-button>
         <a-button @click="doShare">分享</a-button>
-        <a-button @click="doSuperResolution">提交超分</a-button>
+        <a-button @click="doSuperResolution">开始超分</a-button>
         <a-button v-if="canEdit" @click="doEdit">编辑</a-button>
         <a-button v-if="canDelete" danger @click="doDelete">删除</a-button>
       </div>
@@ -33,7 +33,7 @@
 
       <div class="app-card info-card">
         <a-descriptions :column="1" bordered>
-          <a-descriptions-item label="作者">
+          <a-descriptions-item label="上传者">
             <a-space>
               <a-avatar :size="24" :src="picture.user?.userAvatar" />
               <span>{{ picture.user?.userName || '-' }}</span>
@@ -234,7 +234,7 @@ const onSuperResolutionTaskCreated = () => {
     router.push(`/space/${picture.value.spaceId}/sr_result`)
     return
   }
-  message.success('任务已提交，请稍后在结果中心查看')
+  message.success('任务已提交，请稍后到结果中心查看')
 }
 </script>
 

@@ -4,7 +4,7 @@
       <a-form-item label="关键词" name="searchText">
         <a-input
           v-model:value="searchParams.searchText"
-          placeholder="搜索名称或简介"
+          placeholder="搜索名称、简介或修复场景"
           allow-clear
         />
       </a-form-item>

@@ -2,11 +2,11 @@
   <div id="homePage" class="app-page">
     <section class="landing-hero">
       <div class="landing-copy">
-        <span class="landing-badge">Cloud AI Workspace</span>
-        <h2 class="landing-title">把图片与视频超分任务放进更快、更轻的工作流里。</h2>
+        <span class="landing-badge">Super Resolution Workspace</span>
+        <h2 class="landing-title">让低清图片和视频，更快回到清晰可用的状态。</h2>
         <p class="landing-desc">
-          从首页直接发起图片增强、视频超分、案例浏览和批量任务。平台保留现有后端能力，
-          但用统一的前端工作台重新组织上传、处理、协作和展示体验。
+          从首页直接上传图片、提交视频超分、浏览案例库和发起批量任务。整个流程尽量简单：
+          选素材、开始处理、对比结果、再决定是否继续协作或沉淀为案例。
         </p>
         <div class="landing-actions">
           <a-button
@@ -14,10 +14,10 @@
             type="primary"
             @click="$router.push('/my_space')"
           >
-            发起超分任务
+            开始处理素材
           </a-button>
-          <a-button size="large" @click="$router.push('/search_picture')">浏览案例展厅</a-button>
-          <a-button size="large" @click="$router.push('/my_space')">进入个人工作空间</a-button>
+          <a-button size="large" @click="$router.push('/search_picture')">浏览案例库</a-button>
+          <a-button size="large" @click="$router.push('/my_space')">进入个人工作台</a-button>
         </div>
         <div class="landing-chips">
           <button
@@ -40,15 +40,15 @@
             <span class="composer-dot" />
           </div>
           <div class="composer-body">
-            <p class="composer-label">今天准备处理什么素材？</p>
+            <p class="composer-label">今天准备修复哪一份图片或视频？</p>
             <div class="composer-input">
               <PlusOutlined />
-              <span>上传图片、视频，或直接进入批量任务提交。</span>
-              <a-button type="primary" @click="$router.push('/my_space')">开始</a-button>
+              <span>上传低清素材，或直接进入批量任务提交流程。</span>
+              <a-button type="primary" @click="$router.push('/my_space')">开始处理</a-button>
             </div>
             <div class="app-metric-grid">
               <div class="app-metric">
-                <div class="app-metric__label">案例条目</div>
+                <div class="app-metric__label">案例数量</div>
                 <div class="app-metric__value">{{ dataList.length }}</div>
               </div>
               <div class="app-metric">
@@ -75,9 +75,9 @@
     <section class="app-surface-card filter-panel">
       <div class="app-panel-head panel-head">
         <div>
-          <h3 class="app-section-title">超分案例展厅</h3>
+          <h3 class="app-section-title">超分案例库</h3>
           <p class="app-section-desc">
-            保留公开素材接口，用统一的筛选与展示逻辑浏览当前可公开查看的案例。
+            在这里查看公开案例，快速了解不同图片和视频经过修复后的变化。
           </p>
         </div>
       </div>
@@ -114,7 +114,7 @@
         <div>
           <h3 class="app-section-title">精选案例</h3>
           <p class="app-section-desc">
-            首页精选案例区与公开展厅列表共用同一套图片列表展示逻辑和交互。
+            这里优先展示更适合作为参考的案例，方便你快速找到接近的修复方向。
           </p>
         </div>
       </div>
@@ -147,23 +147,23 @@ const quickChips = [
 
 const sceneCards = [
   {
-    eyebrow: '个人使用',
-    title: '个人工作空间',
-    desc: '处理私有素材、管理任务参数，并追踪超分结果与下载记录。',
+    eyebrow: '个人处理',
+    title: '个人工作台',
+    desc: '整理自己的图片和视频任务，查看每一次修复结果，并保留处理记录。',
     cta: '进入工作台',
     path: '/my_space',
   },
   {
-    eyebrow: '多人协同',
-    title: '团队协作空间',
-    desc: '面向团队分工、成员权限、结果沉淀和协同交付场景。',
-    cta: '创建协作空间',
+    eyebrow: '多人协作',
+    title: '团队协作台',
+    desc: '适合多人一起分工处理素材、跟进结果和沉淀案例。',
+    cta: '创建协作台',
     path: '/add_space?type=1',
   },
   {
-    eyebrow: '公开展示',
-    title: '超分案例展厅',
-    desc: '集中浏览公开案例、检索结果和对外展示内容。',
+    eyebrow: '案例参考',
+    title: '超分案例库',
+    desc: '集中浏览公开案例，快速参考不同场景下的修复效果。',
     cta: '浏览案例',
     path: '/search_picture',
   },

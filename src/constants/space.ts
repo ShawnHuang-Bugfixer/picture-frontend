@@ -24,8 +24,8 @@ export const SPACE_TYPE_ENUM = {
 } as const
 
 export const SPACE_TYPE_MAP: Record<number, string> = {
-  0: '人工作空间',
-  1: '团队协作空间',
+  0: '个人工作台',
+  1: '团队协作台',
 }
 
 export const SPACE_TYPE_OPTIONS = Object.keys(SPACE_TYPE_MAP).map((key) => {

@@ -3,7 +3,7 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">用户管理</h2>
-        <p class="app-page__subtitle">查看平台用户、角色信息与基础账户资料，统一接入新后台视觉样式。</p>
+        <p class="app-page__subtitle">查看平台成员、角色分工和账户资料，方便维护协作关系。</p>
       </div>
     </section>
 

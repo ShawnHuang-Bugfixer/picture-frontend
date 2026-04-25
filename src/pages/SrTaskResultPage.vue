@@ -4,14 +4,14 @@
       <div>
         <h2 class="app-page__title">结果中心</h2>
         <p class="app-page__subtitle">
-          筛选并查看当前工作空间内的图片与视频超分结果，支持预览、下载和追踪输出元数据。
+          筛选并查看当前工作台里的图片与视频修复结果，支持预览、下载和前后对比。
         </p>
       </div>
       <div class="app-page__actions">
         <a-tag>{{ spaceTypeText }}</a-tag>
-        <a-button type="primary" @click="goToGalleryUpload">上传至展厅</a-button>
+        <a-button type="primary" @click="goToGalleryUpload">发布到案例库</a-button>
         <a-button @click="fetchData">刷新结果</a-button>
-        <a-button @click="backToSpace">返回工作空间</a-button>
+        <a-button @click="backToSpace">返回工作台</a-button>
       </div>
     </section>
 
@@ -51,7 +51,7 @@
 
     <section class="app-card result-shell">
       <a-spin :spinning="loading">
-        <a-empty v-if="!loading && dataList.length === 0" description="暂无超分结果" />
+        <a-empty v-if="!loading && dataList.length === 0" description="还没有修复结果" />
         <a-list
           v-else
           :data-source="dataList"
@@ -114,7 +114,7 @@
                     <a v-if="canCompareResult(item)" @click.prevent="openCompareModal(item)">
                       对比结果
                     </a>
-                    <a :href="item.outputUrl" target="_blank">查看文件</a>
+                    <a :href="item.outputUrl" target="_blank">查看结果</a>
                     <a @click.prevent="doDownload(item)">下载</a>
                   </a-space>
                 </template>
@@ -198,7 +198,7 @@ const searchParams = reactive({
 })
 
 const isTeamSpace = computed(() => space.value.spaceType === 1)
-const spaceTypeText = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作空间')
+const spaceTypeText = computed(() => SPACE_TYPE_MAP[space.value.spaceType || 0] || '工作台')
 const hasViewPermission = computed(() => {
   if (!isTeamSpace.value) {
     return permissionList.value.includes(SPACE_PERMISSION_ENUM.PRIVATE_VIEW_IMAGE)
@@ -264,7 +264,7 @@ const checkAccess = async () => {
   if (spaceRes.data.code === 0 && spaceRes.data.data) {
     space.value = spaceRes.data.data
   } else {
-    throw new Error(spaceRes.data.message || '工作空间不存在')
+    throw new Error(spaceRes.data.message || '工作台不存在')
   }
 
   if (!loginUser.value?.id) {
@@ -280,7 +280,7 @@ const checkAccess = async () => {
   }
 
   if (!hasViewPermission.value) {
-    throw new Error('无权限查看该工作空间的超分结果')
+    throw new Error('无权限查看该工作台的超分结果')
   }
 }
 

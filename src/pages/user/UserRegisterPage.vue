@@ -2,9 +2,9 @@
   <div id="userRegisterPage" class="app-auth-shell">
     <section class="app-auth-panel">
       <span class="auth-eyebrow">Create Workspace</span>
-      <h1 class="auth-title">注册账号，开始你的云端超分工作流。</h1>
+      <h1 class="auth-title">注册账号，开始你的图像超分修复工作流。</h1>
       <p class="auth-desc">
-        你可以创建人工作空间、发起图片和视频超分任务，并在团队协作空间中共享结果与案例沉淀。
+        注册后可以创建个人工作台、发起图片和视频修复任务，并在团队工作台里共享结果和案例。
       </p>
       <div class="auth-points">
         <div class="auth-point">邮箱验证</div>
@@ -16,7 +16,7 @@
     <section class="app-auth-form">
       <div class="form-head">
         <h2 class="form-title">创建平台账号</h2>
-        <p class="form-desc">注册后即可进入首页、工作空间和结果中心。</p>
+        <p class="form-desc">注册后即可进入首页、工作台和结果中心。</p>
       </div>
       <a-form :model="formState" name="registerForm" autocomplete="off" @finish="handleSubmit">
         <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">

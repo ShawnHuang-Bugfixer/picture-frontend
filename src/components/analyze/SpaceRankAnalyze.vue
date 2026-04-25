@@ -1,6 +1,6 @@
 <template>
   <div class="analyze-shell">
-    <a-card title="工作空间容量排行">
+    <a-card title="工作台容量排行">
       <v-chart :option="options" style="height: 320px; max-width: 100%" :loading="loading" />
     </a-card>
   </div>
@@ -47,7 +47,7 @@ watchEffect(() => {
 })
 
 const options = computed(() => {
-  const spaceNames = dataList.value.map((item) => item.spaceName || '未命名空间')
+  const spaceNames = dataList.value.map((item) => item.spaceName || '未命名工作台')
   const usageData = dataList.value.map((item) =>
     Number(((item.totalSize ?? 0) / (1024 * 1024)).toFixed(2)),
   )

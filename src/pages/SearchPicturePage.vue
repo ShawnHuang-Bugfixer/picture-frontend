@@ -2,12 +2,12 @@
   <div id="searchPicturePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">{{ isPictureSearchMode ? '案例检索' : '超分案例展厅' }}</h2>
+        <h2 class="app-page__title">{{ isPictureSearchMode ? '案例检索' : '超分案例库' }}</h2>
         <p class="app-page__subtitle">
           {{
             isPictureSearchMode
               ? '围绕当前素材查找相似案例，用于参考风格、构图和超分处理效果。'
-              : '集中浏览当前可公开查看的图片与视频案例，并统一复用共享图片列表展示逻辑。'
+              : '集中浏览当前可公开查看的图片与视频案例，快速参考不同场景下的修复效果。'
           }}
         </p>
       </div>
@@ -41,7 +41,7 @@
         <div class="app-surface-card result-card">
           <div class="card-head">
             <h3 class="app-section-title">相似案例</h3>
-            <p class="app-section-desc">结果继续复用现有相似检索接口，保持按图搜图链路不变。</p>
+            <p class="app-section-desc">系统会围绕当前素材，帮你找出风格和结构更接近的参考案例。</p>
           </div>
           <a-list
             :grid="{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3 }"
@@ -68,7 +68,7 @@
       <section class="app-surface-card gallery-filter-card">
         <div class="card-head">
           <h3 class="app-section-title">公开案例列表</h3>
-          <p class="app-section-desc">保留搜索入口，公开展厅列表统一使用共享图片列表展示逻辑。</p>
+          <p class="app-section-desc">这里收录可公开查看的案例，方便你按标题、简介和标签快速筛选。</p>
         </div>
         <a-input-search
           v-model:value="gallerySearchParams.searchText"
@@ -81,7 +81,7 @@
       <section class="app-surface-card gallery-card">
         <PictureList :dataList="galleryResultList" :loading="loading" :showOp="false" />
 
-        <a-empty v-if="!loading && galleryResultList.length === 0" description="暂无公开案例" />
+        <a-empty v-if="!loading && galleryResultList.length === 0" description="暂时没有公开案例" />
         <div v-if="loading" class="load-status">案例加载中...</div>
         <div v-else-if="galleryFinished && galleryResultList.length > 0" class="load-status">
           已经看到全部案例了

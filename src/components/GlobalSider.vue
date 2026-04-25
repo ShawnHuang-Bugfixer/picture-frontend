@@ -3,14 +3,14 @@
     <router-link class="brand-card" to="/">
       <div class="brand-mark">SR</div>
       <div>
-        <p class="brand-overline">Cloud AI</p>
+        <p class="brand-overline">Super Resolution</p>
         <h2 class="brand-title">{{ APP_SHORT_NAME }}</h2>
-        <p class="brand-desc">图片与视频超分辨率重构平台</p>
+        <p class="brand-desc">低清图片与视频修复工作台</p>
       </div>
     </router-link>
 
     <section class="nav-card">
-      <p class="nav-section-title">主场景</p>
+      <p class="nav-section-title">核心入口</p>
 
       <router-link
         v-for="item in primaryItems"
@@ -31,7 +31,7 @@
           @click="toggleTeamGroup"
         >
           <ClusterOutlined />
-          <span>团队协作空间</span>
+          <span>团队协作台</span>
           <DownOutlined class="team-group__arrow" :class="{ expanded: isTeamGroupExpanded }" />
         </button>
 
@@ -44,13 +44,13 @@
             :to="`/space/${resolveSpaceId(spaceUser)}`"
           >
             <span class="team-group__item-name">
-              {{ spaceUser.space?.spaceName || `团队空间 ${resolveSpaceId(spaceUser)}` }}
+              {{ spaceUser.space?.spaceName || `团队工作台 ${resolveSpaceId(spaceUser)}` }}
             </span>
-            <span class="team-group__item-meta">协作入口</span>
+            <span class="team-group__item-meta">协作处理入口</span>
           </router-link>
 
           <div v-if="teamSpaceList.length === 0" class="team-group__empty">
-            暂无已加入的团队空间
+            还没有加入团队工作台
           </div>
 
           <button class="team-group__create" type="button" @click="goToCreateTeamSpace">+</button>
@@ -70,7 +70,7 @@
     </section>
 
     <section v-if="isAdmin" class="nav-card">
-      <p class="nav-section-title">管理后台</p>
+      <p class="nav-section-title">平台管理</p>
       <router-link
         v-for="item in adminItems"
         :key="item.key"
@@ -86,7 +86,7 @@
     <div class="status-card">
       <p class="status-card__title">当前状态</p>
       <p class="status-card__value">
-        {{ loginUserStore.loginUser.id ? '已登录，可直接提交任务' : '未登录，仅可浏览案例' }}
+        {{ loginUserStore.loginUser.id ? '已登录，可继续提交修复任务' : '未登录，可先浏览案例库' }}
       </p>
     </div>
   </div>
@@ -117,18 +117,18 @@ const isTeamGroupExpanded = ref(false)
 
 const primaryItems = [
   { key: '/', label: '首页', icon: HomeOutlined },
-  { key: '/my_space', label: '人工作空间', icon: UserOutlined },
+  { key: '/my_space', label: '个人工作台', icon: UserOutlined },
 ]
 
 const trailingItems = [
-  { key: '/search_picture', label: '超分案例展厅', icon: AppstoreOutlined },
+  { key: '/search_picture', label: '超分案例库', icon: AppstoreOutlined },
   { key: '/upload_case', label: '上传超分案例', icon: DatabaseOutlined },
 ]
 
 const adminItems = [
   { key: '/admin/userManage', label: '用户管理', icon: UserOutlined },
   { key: '/admin/pictureManage', label: '素材管理', icon: DatabaseOutlined },
-  { key: '/admin/spaceManage', label: '工作空间管理', icon: SettingOutlined },
+  { key: '/admin/spaceManage', label: '工作台管理', icon: SettingOutlined },
 ]
 
 const currentPath = computed(() => route.path)
@@ -172,7 +172,7 @@ const fetchTeamSpaceList = async () => {
     teamSpaceList.value = res.data.data.filter((item) => Boolean(resolveSpaceId(item))).slice(0, 6)
     return
   }
-  message.error('加载团队协作空间失败，' + res.data.message)
+  message.error('加载团队工作台失败，' + res.data.message)
 }
 
 watch(

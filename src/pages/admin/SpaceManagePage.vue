@@ -2,13 +2,13 @@
   <div id="spaceManagePage" class="app-page">
     <section class="app-page__hero">
       <div>
-        <h2 class="app-page__title">工作空间管理</h2>
+        <h2 class="app-page__title">工作台管理</h2>
         <p class="app-page__subtitle">
-          统一管理个人工作空间、团队协作空间与容量使用情况，快速定位异常空间与高频使用区域。
+          统一查看个人工作台、团队协作台和容量使用情况，快速定位高频处理区域。
         </p>
       </div>
       <div class="app-page__actions">
-        <a-button href="/space_analyze?queryPublic=1" target="_blank">展厅分析</a-button>
+        <a-button href="/space_analyze?queryPublic=1" target="_blank">案例库分析</a-button>
         <a-button href="/space_analyze?queryAll=1" target="_blank">全局分析</a-button>
       </div>
     </section>
@@ -41,29 +41,29 @@
         <div>
           <h3 class="app-section-title">筛选与检索</h3>
           <p class="app-section-desc">
-            按空间名称、规格、类型和用户 ID 快速筛选，保持后台控制台的信息密度。
+            按工作台名称、规格、类型和用户 ID 快速筛选，方便集中查看使用情况。
           </p>
         </div>
       </div>
 
       <a-form class="control-form" layout="inline" :model="searchParams" @finish="doSearch">
-        <a-form-item label="空间名称">
-          <a-input v-model:value="searchParams.spaceName" placeholder="输入空间名称" allow-clear />
+        <a-form-item label="工作台名称">
+          <a-input v-model:value="searchParams.spaceName" placeholder="输入工作台名称" allow-clear />
         </a-form-item>
-        <a-form-item label="空间规格" name="spaceLevel">
+        <a-form-item label="工作台规格" name="spaceLevel">
           <a-select
             v-model:value="searchParams.spaceLevel"
             style="min-width: 180px"
-            placeholder="请选择空间规格"
+            placeholder="请选择工作台规格"
             :options="SPACE_LEVEL_OPTIONS"
             allow-clear
           />
         </a-form-item>
-        <a-form-item label="空间类型" name="spaceType">
+        <a-form-item label="工作台类型" name="spaceType">
           <a-select
             v-model:value="searchParams.spaceType"
             :options="SPACE_TYPE_OPTIONS"
-            placeholder="请选择空间类型"
+            placeholder="请选择工作台类型"
             style="min-width: 180px"
             allow-clear
           />
@@ -84,7 +84,7 @@
     <section class="app-table-card">
       <div class="table-head">
         <div>
-          <h3 class="app-section-title">空间列表</h3>
+          <h3 class="app-section-title">工作台列表</h3>
           <p class="app-section-desc">
             查看容量、数量、归属用户与最近编辑时间，并从这里进入分析或编辑流程。
           </p>
@@ -102,7 +102,7 @@
           <template v-if="column.dataIndex === 'spaceName'">
             <div class="space-name-cell">
               <span class="space-name-cell__name">{{
-                record.spaceName || `空间 ${record.id}`
+                record.spaceName || `工作台 ${record.id}`
               }}</span>
               <span class="space-name-cell__meta">ID {{ record.id }}</span>
             </div>
@@ -185,7 +185,7 @@ const fetchData = async () => {
     total.value = res.data.data.total ?? 0
     return
   }
-  message.error('获取工作空间失败，' + res.data.message)
+  message.error('获取工作台失败，' + res.data.message)
 }
 
 onMounted(() => {

@@ -1,12 +1,12 @@
 <template>
   <div class="url-picture-upload">
     <div class="url-shell">
-      <a-input v-model:value="fileUrl" placeholder="输入图片 URL，提交到当前工作空间或案例流中" />
+      <a-input v-model:value="fileUrl" placeholder="输入图片 URL，提交到当前工作台或案例整理流程中" />
       <a-button type="primary" :loading="loading" @click="handleUpload">提交 URL</a-button>
     </div>
     <div class="preview-card">
       <img v-if="picture?.url" :src="picture.url" alt="preview" />
-      <div v-else class="preview-empty">提交成功后，会在这里显示当前素材预览。</div>
+      <div v-else class="preview-empty">提交成功后，这里会显示当前素材预览。</div>
     </div>
   </div>
 </template>

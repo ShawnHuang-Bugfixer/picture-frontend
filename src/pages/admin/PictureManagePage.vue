@@ -3,10 +3,10 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">素材管理</h2>
-        <p class="app-page__subtitle">审核公开素材、维护案例内容，并对图片类数据做统一治理。</p>
+        <p class="app-page__subtitle">统一查看公开样例、维护案例内容，并处理需要人工确认的素材。</p>
       </div>
       <div class="app-page__actions">
-        <a-button href="/add_picture/batch" target="_blank">批量任务提交</a-button>
+        <a-button href="/add_picture/batch" target="_blank">批量提交任务</a-button>
       </div>
     </section>
 
@@ -71,8 +71,8 @@
           </template>
           <template v-else-if="column.dataIndex === 'reviewMessage'">
             <div>状态：{{ PIC_REVIEW_STATUS_MAP[Number(record.reviewStatus)] }}</div>
-            <div>信息：{{ record.reviewMessage }}</div>
-            <div>审核人：{{ record.reviewerId }}</div>
+            <div>说明：{{ record.reviewMessage }}</div>
+            <div>处理人：{{ record.reviewerId }}</div>
             <div v-if="record.reviewTime">
               时间：{{ dayjs(record.reviewTime).format('YYYY-MM-DD HH:mm:ss') }}
             </div>
@@ -137,7 +137,7 @@ const columns = [
   { title: '素材信息', dataIndex: 'picInfo' },
   { title: '用户 ID', dataIndex: 'userId', width: 90 },
   { title: '空间 ID', dataIndex: 'spaceId', width: 90 },
-  { title: '审核信息', dataIndex: 'reviewMessage' },
+  { title: '处理信息', dataIndex: 'reviewMessage' },
   { title: '创建时间', dataIndex: 'createTime' },
   { title: '更新时间', dataIndex: 'editTime' },
   { title: '操作', key: 'action' },
@@ -203,17 +203,17 @@ const doDelete = async (id: number) => {
 
 const handleReview = async (record: API.Picture, reviewStatus: number) => {
   const reviewMessage =
-    reviewStatus === PIC_REVIEW_STATUS_ENUM.FINAL_APPROVED ? '管理员审核通过' : '管理员审核拒绝'
+    reviewStatus === PIC_REVIEW_STATUS_ENUM.FINAL_APPROVED ? '管理员确认通过' : '管理员确认驳回'
   const res = await doPictureReviewUsingPost({
     id: record.id,
     reviewStatus,
     reviewMessage,
   })
   if (res.data.code === 0) {
-    message.success('审核操作成功')
+    message.success('处理完成')
     fetchData()
     return
   }
-  message.error('审核操作失败，' + res.data.message)
+  message.error('处理失败，' + res.data.message)
 }
 </script>

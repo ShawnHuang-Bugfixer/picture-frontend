@@ -3,7 +3,7 @@
     <section class="app-page__hero">
       <div>
         <h2 class="app-page__title">账户中心</h2>
-        <p class="app-page__subtitle">查看账户资料、消息提醒、素材发布情况与审核进度。</p>
+        <p class="app-page__subtitle">查看账户资料、消息提醒、我的样例和近期处理记录。</p>
       </div>
     </section>
 
@@ -27,7 +27,7 @@
           </a-upload>
 
           <div class="profile-meta">
-            <div class="profile-name">{{ user?.userName || '未登录用户' }}</div>
+            <div class="profile-name">{{ user?.userName || '游客' }}</div>
             <div class="profile-id">账号 ID：{{ user?.id || '-' }}</div>
             <div class="profile-desc">{{ user?.userProfile || '暂未填写个人简介。' }}</div>
           </div>
@@ -38,7 +38,7 @@
             <EditOutlined />
             编辑资料
           </a-button>
-          <a-button @click="showAppealingPictureModal = true">申诉中素材</a-button>
+          <a-button @click="showAppealingPictureModal = true">处理中申诉</a-button>
           <a-badge :count="unreadCount" :offset="[8, 0]">
             <a-button @click="showMessageModal = true">
               <BellOutlined />
@@ -53,7 +53,7 @@
           <div class="section-head">
             <div>
               <h3 class="app-section-title">我的素材</h3>
-              <p class="app-section-desc">最近发布的素材与案例内容。</p>
+              <p class="app-section-desc">最近上传或整理过的图片、视频和案例。</p>
             </div>
             <a-button type="link" @click="showPictureModal = true">查看全部</a-button>
           </div>
@@ -81,8 +81,8 @@
         <section class="app-card">
           <div class="section-head">
             <div>
-              <h3 class="app-section-title">未过审素材</h3>
-              <p class="app-section-desc">查看被驳回素材，并可继续发起申诉。</p>
+              <h3 class="app-section-title">待处理反馈</h3>
+              <p class="app-section-desc">这里会列出暂未通过的内容，方便你继续补充说明。</p>
             </div>
             <a-button type="link" @click="showRejectedPictureModal = true">查看全部</a-button>
           </div>
@@ -104,7 +104,7 @@
               <a-card-meta :title="picture.name || '未命名素材'" />
             </a-card>
           </div>
-          <a-empty v-else description="暂无未过审素材" />
+          <a-empty v-else description="暂无待处理反馈" />
         </section>
       </div>
     </section>
@@ -154,7 +154,7 @@
 
     <a-modal
       v-model:open="showRejectedPictureModal"
-      title="未过审素材"
+      title="待处理反馈"
       width="80%"
       :footer="null"
       @afterOpen="handleRejectedModalOpened"
@@ -230,7 +230,7 @@
 
     <a-modal
       v-model:open="showAppealModal"
-      title="申诉未过审素材"
+      title="补充说明"
       @ok="handleAppeal"
       @cancel="showAppealModal = false"
       :confirm-loading="appealLoading"
@@ -239,10 +239,10 @@
         <a-form-item label="素材 ID" name="pictureId">
           <a-input :value="appealForm.pictureId ? String(appealForm.pictureId) : ''" readonly />
         </a-form-item>
-        <a-form-item label="申诉说明" name="reason">
+        <a-form-item label="补充说明" name="reason">
           <a-textarea
             v-model:value="appealForm.reason"
-            placeholder="输入申诉说明"
+            placeholder="输入补充说明"
             :rows="3"
           />
         </a-form-item>
@@ -251,7 +251,7 @@
 
     <a-modal
       v-model:open="showAppealingPictureModal"
-      title="申诉中素材"
+      title="处理中申诉"
       width="80%"
       :footer="null"
       @cancel="showAppealingPictureModal = false"
@@ -539,15 +539,15 @@ const handleAppeal = async () => {
       picId: appealForm.value.pictureId,
     })
     if (res.data.code === 0) {
-      message.success('申诉提交成功')
+      message.success('说明已提交')
       showAppealModal.value = false
       appealForm.value = { pictureId: undefined, reason: '' }
       await fetchRejectedPictures()
     } else {
-      message.error('申诉失败，' + res.data.message)
+      message.error('提交失败，' + res.data.message)
     }
   } catch {
-    message.error('申诉失败')
+    message.error('提交失败')
   } finally {
     appealLoading.value = false
   }

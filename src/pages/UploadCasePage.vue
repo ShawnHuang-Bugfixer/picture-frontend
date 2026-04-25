@@ -7,7 +7,7 @@
       </div>
       <div class="app-page__actions">
         <a-button v-if="showBackToResultCenter" @click="backToResultCenter">返回结果中心</a-button>
-        <a-button @click="$router.push('/search_picture')">查看超分案例展厅</a-button>
+        <a-button @click="$router.push('/search_picture')">查看超分案例库</a-button>
       </div>
     </section>
 
@@ -15,7 +15,7 @@
       <section class="app-card upload-card">
         <div class="card-head">
           <h3 class="app-section-title">案例素材</h3>
-          <p class="app-section-desc">上传图片或视频作为案例素材，整理完成后发布到超分案例展厅。</p>
+          <p class="app-section-desc">上传图片或视频作为案例样例，整理完成后发布到超分案例库。</p>
         </div>
         <a-tabs v-model:activeKey="uploadType">
           <a-tab-pane key="file" tab="文件上传">
@@ -31,7 +31,7 @@
         <div class="card-head">
           <h3 class="app-section-title">案例信息</h3>
           <p class="app-section-desc">
-            补齐标题、简介、分类和标签，便于后续在超分案例展厅中检索和展示。
+            补齐标题、简介、分类和标签，便于后续在案例库中检索和展示。
           </p>
         </div>
         <a-form name="pictureForm" layout="vertical" :model="pictureForm" @finish="handleSubmit">
@@ -80,7 +80,7 @@
     <section v-if="picture?.id" class="app-card tool-card">
       <div class="card-head">
         <h3 class="app-section-title">案例完善</h3>
-        <p class="app-section-desc">上传完成后可继续裁剪或扩图，进一步优化案例素材的展示效果。</p>
+        <p class="app-section-desc">上传完成后可以继续裁剪或扩图，让案例更清楚地展示修复效果。</p>
       </div>
       <div class="tool-actions">
         <a-button @click="doEditPicture">裁剪素材</a-button>
@@ -193,9 +193,7 @@ const sourceSpaceId = computed(() => normalizeQueryValue(route.query?.sourceSpac
 const showBackToResultCenter = computed(() => Boolean(sourceSpaceId.value))
 
 const pageTitle = computed(() => (pictureId.value ? '编辑超分案例' : '上传超分案例'))
-const pageSubtitle = computed(
-  () => '上传图片或视频素材，完善案例信息，再发布到超分案例展厅统一展示。',
-)
+const pageSubtitle = computed(() => '上传处理前后的样例，补充信息后发布到超分案例库。')
 
 const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture

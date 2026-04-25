@@ -81,7 +81,7 @@
                   class="picture-card__cta"
                   @click.stop="doSuperResolution(item, $event)"
                 >
-                  AI超分
+                  开始超分
                 </a-button>
                 <a-button
                   v-if="showId && onAppeal"
@@ -89,7 +89,7 @@
                   class="picture-card__cta picture-card__cta--warning"
                   @click.stop="props.onAppeal?.(item)"
                 >
-                  申诉
+                  补充说明
                 </a-button>
               </template>
             </MediaMasonryCard>

@@ -1,5 +1,7 @@
 <template>
   <div id="userLoginPage" class="app-auth-shell">
+    <PhotoOrbitBackground :items="loginOrbitItems" />
+
     <section class="app-auth-panel">
       <span class="auth-eyebrow">Super Resolution Workspace</span>
       <h1 class="auth-title">回到你的超分工作台，继续处理待修复的图片和视频。</h1>
@@ -46,10 +48,25 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { message } from 'ant-design-vue'
+import PhotoOrbitBackground from '@/components/PhotoOrbitBackground.vue'
+import type { PhotoOrbitItem } from '@/components/PhotoOrbitBackground.vue'
 import router from '@/router'
 import { userLoginUsingPost } from '@/api/userController.ts'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { useWebSocketStore } from '@/stores/useWebSocketStore.ts'
+
+const loginOrbitItems: PhotoOrbitItem[] = [
+  { title: 'Image Restore', meta: '2x / 4x SR', tone: 'blue' },
+  { title: 'Video Upscale', meta: 'Frame detail', tone: 'cyan' },
+  { title: 'Case Gallery', meta: 'Before / After', tone: 'slate' },
+  { title: 'Batch Queue', meta: 'Workspace', tone: 'green' },
+  { title: 'Noise Clean', meta: 'AI repair', tone: 'amber' },
+  { title: 'Face Detail', meta: 'Texture boost', tone: 'rose' },
+  { title: 'Team Review', meta: 'Shared result', tone: 'indigo' },
+  { title: 'Smart Crop', meta: 'Composition', tone: 'violet' },
+  { title: 'Result Export', meta: 'HD output', tone: 'teal' },
+  { title: 'Model Preset', meta: 'Clean profile', tone: 'orange' },
+]
 
 const formState = reactive<API.UserLoginRequest>({
   userAccount: '',
@@ -80,6 +97,21 @@ const handleSubmit = async (values: API.UserLoginRequest) => {
 
 #userLoginPage {
   align-items: center;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+#userLoginPage .app-auth-panel,
+#userLoginPage .app-auth-form {
+  position: relative;
+  z-index: 2;
+}
+
+#userLoginPage .app-auth-panel {
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.1), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.56), transparent 24%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74) 0%, rgba(251, 251, 252, 0.82) 100%);
 }
 
 .auth-eyebrow {

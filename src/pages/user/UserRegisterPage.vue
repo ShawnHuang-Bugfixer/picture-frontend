@@ -1,5 +1,7 @@
 <template>
   <div id="userRegisterPage" class="app-auth-shell">
+    <PhotoOrbitBackground :items="registerOrbitItems" />
+
     <section class="app-auth-panel">
       <span class="auth-eyebrow">Create Workspace</span>
       <h1 class="auth-title">注册账号，开始你的图像超分修复工作流。</h1>
@@ -83,9 +85,24 @@
 import { reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import router from '@/router'
+import PhotoOrbitBackground from '@/components/PhotoOrbitBackground.vue'
 import SliderCaptcha from '@/components/SliderCaptcha.vue'
+import type { PhotoOrbitItem } from '@/components/PhotoOrbitBackground.vue'
 import { userRegisterUsingPost } from '@/api/userController.ts'
 import { sendEmailCode, getSliderToken } from '@/api/emailCodeController'
+
+const registerOrbitItems: PhotoOrbitItem[] = [
+  { title: 'Create Workspace', meta: 'Personal hub', tone: 'blue' },
+  { title: 'Email Verify', meta: 'Secure sign up', tone: 'cyan' },
+  { title: 'Image Repair', meta: 'First task', tone: 'green' },
+  { title: 'Video Restore', meta: 'Detail queue', tone: 'indigo' },
+  { title: 'Case Library', meta: 'Shared examples', tone: 'violet' },
+  { title: 'Team Space', meta: 'Collaborate', tone: 'teal' },
+  { title: 'Result Center', meta: 'HD outputs', tone: 'amber' },
+  { title: 'Smart Preset', meta: 'Clean profile', tone: 'slate' },
+  { title: 'Safety Check', meta: 'Slider token', tone: 'rose' },
+  { title: 'Batch Ready', meta: 'Upload flow', tone: 'orange' },
+]
 
 const formState = reactive<API.UserRegisterRequest>({
   userAccount: '',
@@ -207,6 +224,21 @@ const handleSendCode = async () => {
 
 #userRegisterPage {
   align-items: center;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+#userRegisterPage .app-auth-panel,
+#userRegisterPage .app-auth-form {
+  position: relative;
+  z-index: 2;
+}
+
+#userRegisterPage .app-auth-panel {
+  background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.1), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.56), transparent 24%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74) 0%, rgba(251, 251, 252, 0.82) 100%);
 }
 
 .auth-eyebrow {

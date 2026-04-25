@@ -57,10 +57,18 @@ watchEffect(() => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+  min-width: 0;
+  height: 100%;
 }
 
 .analyze-card {
   height: 100%;
+}
+
+.analyze-card :deep(.ant-card-body) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .analyze-meter {
@@ -69,13 +77,17 @@ watchEffect(() => {
   gap: 12px;
   align-items: center;
   justify-content: center;
-  min-height: 280px;
+  width: 100%;
+  min-height: 320px;
   text-align: center;
 }
 
 .analyze-meter h3 {
   margin: 0;
+  max-width: 100%;
   font-size: 24px;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 @media (max-width: 768px) {

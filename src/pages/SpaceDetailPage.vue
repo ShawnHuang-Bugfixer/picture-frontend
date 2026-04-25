@@ -111,7 +111,7 @@
 import { BarChartOutlined, EditOutlined, TeamOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import { computed, h, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import { getSrTaskVoByIdUsingGet } from '@/api/srTaskController.ts'
@@ -125,7 +125,7 @@ import {
   getSrTaskStatusText,
   SR_TASK_TERMINAL_STATUS,
 } from '@/constants/srTask.ts'
-import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
+import { SPACE_PERMISSION_ENUM, SPACE_TYPE_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
 import { formatSize } from '@/utils'
 
 interface Props {
@@ -133,6 +133,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const route = useRoute()
 const router = useRouter()
 const space = ref<API.SpaceVO>({})
 const loginUser = ref<API.LoginUserVO>()
@@ -231,6 +232,8 @@ const fetchSpaceDetail = async () => {
     })
     if (res.data.code === 0 && res.data.data) {
       space.value = res.data.data
+      route.meta.scene =
+        space.value.spaceType === SPACE_TYPE_ENUM.TEAM ? 'teamWorkspace' : 'personalWorkspace'
       return
     }
     message.error(`获取工作台详情失败，${res.data.message || '请稍后重试'}`)

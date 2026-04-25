@@ -3,6 +3,7 @@ export const APP_SHORT_NAME = '云端超分'
 
 export const SCENE_LABEL_MAP = {
   home: '首页',
+  workspace: '工作台',
   personalWorkspace: '个人工作台',
   teamWorkspace: '团队协作台',
   caseGallery: '超分案例库',

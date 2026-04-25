@@ -1,7 +1,7 @@
 <template>
   <div class="analyze-shell">
     <a-card title="素材分类分析">
-      <v-chart :option="options" style="height: 320px; max-width: 100%" :loading="loading" />
+      <v-chart class="analyze-chart" :option="options" :loading="loading" autoresize />
     </a-card>
   </div>
 </template>
@@ -83,7 +83,16 @@ const options = computed(() => {
 </script>
 
 <style scoped lang="less">
+.analyze-shell {
+  min-width: 0;
+}
+
 .analyze-shell :deep(.ant-card) {
   height: 100%;
+}
+
+.analyze-chart {
+  width: 100%;
+  height: 320px;
 }
 </style>

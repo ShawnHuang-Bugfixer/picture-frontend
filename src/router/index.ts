@@ -190,7 +190,7 @@ const routes: RouteRecordRaw[] = [
       title: '工作台详情',
       subtitle: '在这里集中查看素材、任务结果、成员分工和使用情况。',
       navGroup: 'core',
-      scene: 'teamWorkspace',
+      scene: 'workspace',
       shell: 'workspace',
     },
   },

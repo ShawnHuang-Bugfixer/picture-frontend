@@ -15,24 +15,24 @@
     </section>
 
     <section class="analysis-grid">
-      <a-col :xs="24" :md="12">
+      <div class="analysis-cell">
         <SpaceUsageAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
-      <a-col :xs="24" :md="12">
+      </div>
+      <div class="analysis-cell">
         <SpaceCategoryAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
-      <a-col :xs="24" :md="12">
+      </div>
+      <div class="analysis-cell">
         <SpaceTagAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
-      <a-col :xs="24" :md="12">
+      </div>
+      <div class="analysis-cell">
         <SpaceSizeAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
-      <a-col :xs="24" :md="12">
+      </div>
+      <div class="analysis-cell">
         <SpaceUserAnalyze :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
-      <a-col :xs="24" :md="12">
+      </div>
+      <div class="analysis-cell">
         <SpaceRankAnalyze v-if="isAdmin" :spaceId="spaceId as any" :queryAll="queryAll" :queryPublic="queryPublic" />
-      </a-col>
+      </div>
     </section>
   </div>
 </template>
@@ -68,6 +68,15 @@ const isAdmin = computed(() => loginUserStore.loginUser.userRole === 'admin')
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.analysis-cell {
+  min-width: 0;
+}
+
+.analysis-cell > * {
+  width: 100%;
+  height: 100%;
 }
 
 @media (max-width: 960px) {
